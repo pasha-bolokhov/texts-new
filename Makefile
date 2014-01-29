@@ -14,9 +14,6 @@
 #
 # "make cleanup"
 #
-#
-# Version information: $Id$
-# 
 
 
 # ----------  To Start, uncomment and edit this line  ----------
@@ -107,3 +104,7 @@ wipe-pdf: wipe-ps
 
 wipe-all: wipe-pdf
 
+
+#
+# Version information: $Date$ $Id$
+# 
