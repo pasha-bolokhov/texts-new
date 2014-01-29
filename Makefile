@@ -106,5 +106,5 @@ wipe-all: wipe-pdf
 
 
 #
-# Version information: $Date$ $Id$
+# Version information: $Date$ $Id$ 
 # 
