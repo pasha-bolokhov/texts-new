@@ -20,6 +20,9 @@
 #                     SRC = sourcefile.tex
 # ----------                                          ----------
 
+# Set this to "true" if 'pdflatex' is needed to be used, "false" for using just 'latex'
+USE_PDFLATEX = true
+
 
 # goals that do not require SRC to be set
 CLEANING_GOALS = clean clean-ps clean-pdf cleanup clean-all wipe-ps wipe-pdf wipe-all
@@ -51,11 +54,17 @@ endif
 # strip the suffix ".tex"
 override SRC ::= $(basename $(SRC))
 
-
 # Postscript is the default goal
 ps: $(SRC).ps
 
 pdf: $(SRC).pdf
+
+
+#
+# Decide whether to create PDF via PostScript or the other way around
+# depending on whether USE_PDFLATEX is set to "true" or "false"
+#
+ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
 
 %.ps: %.tex
 	latex $< && latex $< && dvips -o $@ $*.dvi
@@ -63,13 +72,24 @@ pdf: $(SRC).pdf
 %.pdf: %.ps %.tex
 	ps2pdf $<
 
+else                                 ## Generate PDF first via 'pdflatex'
+
+%.pdf: %.tex
+	pdflatex $< && pdflatex $<
+
+%.ps: %.pdf %.tex
+	pdf2ps $<
+
+endif
+
+
 clean:
 	rm -f *.aux *.dvi *.log *.toc texput.log *.bak *~
 
 clean-ps: clean
 	@for file_product in *.ps; do \
 		if [ ! -f $${file_product} ]; then continue; fi; \
-		file=$$(echo -n $${file_product} | sed 's/\.ps$$//'); \
+		file=$$(basename $${file_product} .ps); \
 		file_tex=$${file}.tex; \
 		if [ -f $${file_tex} ]; then \
 			echo "rm -f $${file_product}"; \
@@ -82,7 +102,7 @@ clean-ps: clean
 clean-pdf: clean-ps
 	@for file_product in *.pdf; do \
 		if [ ! -f $${file_product} ]; then continue; fi; \
-		file=$$(echo -n $${file_product} | sed 's/\.pdf$$//'); \
+		file=$$(basename $${file_product} .pdf); \
 		file_tex=$${file}.tex; \
 		if [ -f $${file_tex} ]; then \
 			echo "rm -f $${file_product}"; \
