@@ -42,6 +42,17 @@ endif
 # if there was at least one of SRC_GOALS supplied to 'make'
 # then we try to setup SRC ourselves
 ifneq ("$(NONCLEANING_SRC_ARGS)", "")
+    #
+    # we got here because the user wants to compile something,
+    # but he/she did not specify which file, so most likely have run
+    #         make ps        
+    # or
+    #         make pdf
+    #
+    # we will ensure that there is only one .tex file 
+    # in the current directory and take this file as the 'target'
+    # 
+
     # pick up the first TeX file
     # let the shell itself correctly split the list of files matching the pattern
     SRC ?= $(shell  for f in *.tex; do [ -f "$${f}" ] && echo "$${f}"; break; done)
@@ -67,7 +78,7 @@ endif
 endif
 
 #
-# Decide whether to create PDF via PostScript or the other way around
+# Decide whether to create PDF via PostScript or the other way around,
 # depending on whether USE_PDFLATEX is set to "true" or "false"
 #
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
