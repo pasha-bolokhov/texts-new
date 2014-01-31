@@ -54,11 +54,17 @@ endif
 # strip the suffix ".tex"
 override SRC ::= $(basename $(SRC))
 
-# Postscript is the default goal
-ps: $(SRC).ps
 
-pdf: $(SRC).pdf
-
+#
+# Check that USE_PDFLATEX is set to something reasonable
+# The user must be completely aware of the implications of the
+# current state of this variable if decided to modify it
+#
+ifneq ("$(USE_PDFLATEX)", "true")
+ifneq ("$(USE_PDFLATEX)", "false")
+    $(error USE_PDFLATEX set to neither "true" nor "false": "$(USE_PDFLATEX)")
+endif
+endif
 
 #
 # Decide whether to create PDF via PostScript or the other way around
@@ -66,17 +72,33 @@ pdf: $(SRC).pdf
 #
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
 
+# Postscript is the default goal
+ps: $(SRC).ps
+
+pdf: $(SRC).pdf
+
+# This is a generic rule how to create a PostScript from TeX
 %.ps: %.tex
 	latex $< && latex $< && dvips -o $@ $*.dvi
 
+# This is a generic rule how to create a PDF - generate a Postscript first,
+# then convert
 %.pdf: %.ps %.tex
 	ps2pdf $<
 
 else                                 ## Generate PDF first via 'pdflatex'
 
+# PDF is the default goal
+pdf: $(SRC).pdf
+
+ps: $(SRC).ps
+
+# This is a generic rule how to create a PDF from TeX
 %.pdf: %.tex
 	pdflatex $< && pdflatex $<
 
+# This is a generic rule how to create a Postscript - generate a PDF first,
+# then convert
 %.ps: %.pdf %.tex
 	pdf2ps $<
 
@@ -124,6 +146,39 @@ wipe-pdf: wipe-ps
 
 wipe-all: wipe-pdf
 
+#
+# Provide a help message upon request
+#
+
+define HELP_MESSAGE = 
+echo "HEP Makefile: compiles LaTeX source into Postscript or PDF."
+echo ""
+echo "Invocation: "
+echo ""
+echo "If only one TeX file is present in the current directory"
+echo "    make"
+echo ""
+echo "More specifically"
+echo "    make ps"
+echo "or"
+echo "    make pdf"
+echo "will generate, respectfully, Postscript or PDF"
+echo ""
+echo "If more than one TeX file is present in the current directory,"
+echo "have to specify which one to use,"
+echo "    make stau-decay.tex"
+echo ""
+echo "To remove .aux, .dvi and so on files, run"
+echo "    make clean"
+echo ""
+echo "See inside of 'Makefile' for more control options"
+endef
+
+help:
+	@$(HELP_MESSAGE)
+
+.DEFAULT:
+	@echo "Don't know how to process '$<' (file name correct?), try \"make help\" for help"
 
 #
 # Version information: $Date$ $Id$ 
