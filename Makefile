@@ -21,7 +21,7 @@
 # ----------                                          ----------
 
 # Set this to "true" if 'pdflatex' is needed to be used, "false" for using just 'latex'
-USE_PDFLATEX = true
+USE_PDFLATEX = false
 
 
 # goals that do not require SRC to be set
@@ -81,6 +81,10 @@ endif
 # Decide whether to create PDF via PostScript or the other way around,
 # depending on whether USE_PDFLATEX is set to "true" or "false"
 #
+
+.PHONY: $(SRC_GOALS)                  # There are no files such as "ps" or "pdf", 
+                                      # and if there are, they should be ignored
+
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
 
 # Postscript is the default goal
@@ -115,6 +119,10 @@ ps: $(SRC).ps
 
 endif
 
+
+.PHONY: $(CLEANING_GOALS)                             # The goals such as "clean" are purely logical,
+                                                      # and if there are files with these names by any coincidence, 
+                                                      # they should be ignored in work of 'make'
 
 clean:
 	rm -f *.aux *.dvi *.log *.toc texput.log *.bak *~
