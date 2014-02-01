@@ -82,8 +82,8 @@ endif
 # depending on whether USE_PDFLATEX is set to "true" or "false"
 #
 
-.PHONY: $(SRC_GOALS)                  # There are no files such as "ps" or "pdf", 
-                                      # and if there are, they should be ignored
+.PHONY: $(SRC_GOALS)                 # There are no files such as "ps" or "pdf", 
+                                     # and if there are, they should be ignored
 
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
 
@@ -193,6 +193,7 @@ echo ""
 echo "See inside of 'Makefile' for more control options"
 endef
 
+.ONESHELL:
 help:
 	@$(HELP_MESSAGE)
 
