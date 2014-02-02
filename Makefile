@@ -53,12 +53,28 @@ ifneq ("$(NONCLEANING_SRC_ARGS)", "")
     # in the current directory and take this file as the 'target'
     # 
 
-    # pick up the first TeX file
-    # let the shell itself correctly split the list of files matching the pattern
-    SRC ?= $(shell  for f in *.tex; do [ -f "$${f}" ] && echo "$${f}"; break; done)
-
-    ifeq ("$(SRC)", "")
+    # check if there is at least one .tex file in the current directory
+    ifeq ("$(wildcard *.tex)", "")
       $(error No LaTeX source found)
+    endif
+
+    # check if there are more than one .tex files in the current directory
+    SRC ?= $(shell \
+                let cnt=0; \
+                for f in *.tex; do \
+                    if [ -f "$${f}" ]; then \
+                        let cnt++; \
+                    fi; \
+                    if [ "$${cnt}" -eq "2" ]; then \
+                        echo -n "."; \
+                        exit; \
+                    fi; \
+                done; \
+                echo -n "$${f}" )
+
+    # above we assign to SRC "." in the case when there are more than one .tex files
+    ifeq ("$(SRC)", ".")
+        $(error More than one LaTeX files found - specify which one to use)
     endif
 endif
 
