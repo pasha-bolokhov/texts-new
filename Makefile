@@ -72,7 +72,7 @@ ifneq ("$(NONCLEANING_SRC_ARGS)", "")
                 done; \
                 echo -n "$${f}" )
 
-    # above we assign to SRC "." in the case when there are more than one .tex files
+    # we have assigned "." to SRC above in the case when there are more than one .tex files
     ifeq ("$(SRC)", ".")
         $(error More than one LaTeX files found - specify which one to use)
     endif
@@ -93,12 +93,13 @@ ifneq ("$(USE_PDFLATEX)", "false")
 endif
 endif
 
+
 #
 # Decide whether to create PDF via PostScript or the other way around,
 # depending on whether USE_PDFLATEX is set to "true" or "false"
 #
 
-.PHONY: $(SRC_GOALS)                 # There are no files such as "ps" or "pdf", 
+.PHONY: $(SRC_GOALS)                 # There are no files such as "ps" or "pdf" exactly, 
                                      # and if there are, they should be ignored
 
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
@@ -117,6 +118,12 @@ pdf: $(SRC).pdf
 %.pdf: %.ps %.tex
 	ps2pdf $<
 
+# This is what happens if the user has requested a TeX file as a goal
+# We're just creating a PostScript in this case
+.PHONY: FORCE
+%.tex: FORCE
+	latex $@ && latex $@ && dvips -o $*.ps $*.dvi
+
 else                                 ## Generate PDF first via 'pdflatex'
 
 # PDF is the default goal
@@ -132,6 +139,12 @@ ps: $(SRC).ps
 # then convert
 %.ps: %.pdf %.tex
 	pdf2ps $<
+
+# This is what happens if the user has requested a TeX file as a goal
+# We're just creating a PDF in this case
+.PHONY: FORCE
+%.tex: FORCE
+	pdflatex $@
 
 endif
 
