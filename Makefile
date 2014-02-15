@@ -105,13 +105,20 @@ endif
 ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
 
 # Postscript is the default goal
-ps: $(SRC).ps
+ps: $(SRC).ps 
 
 pdf: $(SRC).pdf
 
 # This is a generic rule how to create a PostScript from TeX
-%.ps: %.tex
-	latex $< && latex $< && dvips -o $@ $*.dvi
+#
+# Commenting the below lines because the dependency on '%.tex'
+# would cause a redundant LaTeX invocation
+#
+# %.ps: %.tex
+#	latex $< && latex $< && dvips -o $@ $*.dvi
+#
+%.ps:
+	latex "$*.tex" && latex "$*.tex" && dvips -o "$@" "$*.dvi"
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
@@ -132,8 +139,15 @@ pdf: $(SRC).pdf
 ps: $(SRC).ps
 
 # This is a generic rule how to create a PDF from TeX
-%.pdf: %.tex
-	pdflatex $< && pdflatex $<
+#
+# Commenting the below lines because the dependency on '%.tex'
+# would cause a redundant LaTeX invocation
+#
+# %.pdf: %.tex
+#	pdflatex $< && pdflatex $<
+#
+%.pdf:
+	pdflatex "$*.tex" && pdflatex "$*.tex"
 
 # This is a generic rule how to create a Postscript - generate a PDF first,
 # then convert
@@ -144,7 +158,7 @@ ps: $(SRC).ps
 # We're just creating a PDF in this case
 .PHONY: FORCE
 %.tex: FORCE
-	pdflatex $@
+	pdflatex $@ && pdflatex $@
 
 endif
 
