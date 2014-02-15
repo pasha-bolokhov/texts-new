@@ -24,6 +24,98 @@
 USE_PDFLATEX = false
 
 
+##
+## Testing area
+##
+
+#
+# Prevent 'make' from deleting any of these files
+# even if it was 'make' itself that made them
+#
+.PRECIOUS: %.tex %.ps %.pdf
+
+#
+# Implicit PostScript compilation: 
+#   - find a TeX file, report an error if none is found
+#     or, report an error if more than one is found
+#   - compile the found TeX file
+#
+.ONESHELL:
+test-ps:
+	@let cnt=0
+	for f in *.tex; do
+	    if [ -f "$${f}" ]; then
+	        let cnt++
+	    fi
+	    if [ "$${cnt}" -eq "2" ]; then
+	        echo More than one LaTeX files found - specify which one to use
+	        exit 2
+	    fi
+	done
+	if [ "$${cnt}" -eq "0" ]; then
+		echo No LaTeX source found
+		exit 2
+	fi
+	# variable 'f' now contains the '.tex' file
+	b=`basename "$${f}" .tex`
+	$(MAKE) MAKELEVEL=0 "$${b}.ps"
+
+#
+# Implicit PDF compilation: 
+#   - find a TeX file, report an error if none is found
+#   - if more than one found, we still can take a guess 
+#     which one to take if there is a corresponding '.ps' file
+#   - compile the found TeX file if it's newer than the Postscript file
+#   - convert it to PDF
+#
+# This makes it handy to be able type 'make pdf' even though
+# there are multiple '.tex' files present
+#
+.ONESHELL:
+test-pdf:
+	@let cnt=0
+	for f in *.tex; do
+	    if [ -f "$${f}" ]; then
+	        let cnt++
+	    fi
+	    if [ "$${cnt}" -eq "2" ]; then
+		let pcnt=0
+		pfail=false
+		# go through all '.ps' files
+		# and see how many of them match a '.tex' file
+		for p in *.ps; do
+			# convert the name to '.tex'
+			t="`basename $${p} .ps`"
+			t="$${t}.tex"
+			# only count those '.ps' files for which there is a '.tex' file
+			if [ -f "$${p}" -a -f "$${t}" ]; then
+				let pcnt++
+			fi
+			if [ "$${pcnt}" -eq "2" ]; then
+				break
+			fi
+		done
+		# fail if none or too many qualifying '.ps' files are found
+		if [ "$${pcnt}" -eq "0" -o "$${pcnt}" -eq "2" ]; then
+			# Give up - can't decide which one to take
+		        echo More than one LaTeX files found - specify which one to use
+		        exit 2
+		fi
+		# now we know which file to use
+		f="$${t}"
+		break
+	    fi
+	done
+	if [ "$${cnt}" -eq "0" ]; then
+		echo No LaTeX source found
+		exit 2
+	fi
+	# variable 'f' now contains the '.tex' file
+	# we let 'make' itself decide how to compile it into the '.pdf'
+	b=`basename $${f} .tex`
+	$(MAKE) MAKELEVEL=0 "$${b}.pdf"
+
+
 # goals that do not require SRC to be set
 CLEANING_GOALS = clean clean-ps clean-pdf cleanup clean-all wipe-ps wipe-pdf wipe-all
 
@@ -114,11 +206,12 @@ pdf: $(SRC).pdf
 # Commenting the below lines because the dependency on '%.tex'
 # would cause a redundant LaTeX invocation
 #
-# %.ps: %.tex
-#	latex $< && latex $< && dvips -o $@ $*.dvi
+%.ps:: %.tex
+	latex $< && latex $< && dvips -o $@ $*.dvi
+
 #
-%.ps:
-	latex "$*.tex" && latex "$*.tex" && dvips -o "$@" "$*.dvi"
+#%.ps:: %.tex
+#	latex "$*.tex" && latex "$*.tex" && dvips -o "$@" "$*.dvi"
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
@@ -129,7 +222,7 @@ pdf: $(SRC).pdf
 # We're just creating a PostScript in this case
 .PHONY: FORCE
 %.tex: FORCE
-	latex $@ && latex $@ && dvips -o $*.ps $*.dvi
+	@$(MAKE) MAKELEVEL=0 "$*.ps"
 
 else                                 ## Generate PDF first via 'pdflatex'
 
@@ -242,6 +335,16 @@ help:
 
 .DEFAULT:
 	@echo "Don't know how to process '$<' (file name correct?), try \"make help\" for help"
+
+#
+#
+# To do:
+#
+#   * Pattern substitution in 'clean-ps' etc instead of 'basename'    
+#
+#   * File names with spaces
+#
+#
 
 #
 # Version information: $Date$ $Id$ 
