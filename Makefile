@@ -15,18 +15,27 @@
 # "make cleanup"
 #
 
+################################################################
+#                                                              #
+#                       User Controls                          #
+#                                                              #
+################################################################
 
 # ----------  To Start, uncomment and edit this line  ----------
 #                     SRC = sourcefile.tex
 # ----------                                          ----------
 
+
 # Set this to "true" if 'pdflatex' is needed to be used, "false" for using just 'latex'
 USE_PDFLATEX = false
 
 
-##
-## Testing area
-##
+################################################################
+#                                                              #
+#                    Main Technical Work                       #
+#                                                              #
+################################################################
+
 
 #
 # Prevent 'make' from deleting any of these files
@@ -34,15 +43,46 @@ USE_PDFLATEX = false
 #
 .PRECIOUS: %.tex %.ps %.pdf
 
+
+.PHONY: ps pdf                       # There are no files such as "ps" or "pdf" exactly, 
+                                     # and if there are, they should be ignored
+
+
 #
-# Implicit PostScript compilation: 
+# Check that USE_PDFLATEX is set to something reasonable
+# The user must be completely aware of the implications of the
+# current state of this variable if decided to modify it
+#
+ifneq ("$(USE_PDFLATEX)", "true")
+ifneq ("$(USE_PDFLATEX)", "false")
+    $(error USE_PDFLATEX set to neither "true" nor "false": "$(USE_PDFLATEX)")
+endif
+endif
+
+
+#
+# This effectively is a subroutine which compiles into the default 
+# output format (Postscript or PDF), by finding a single '.tex' file
+#
+# The variable 'ext' determines the extension of the default format
+# ('ps' for Postscript, 'pdf' for PDF)
+#
+#
+# Implicit PostScript/PDF compilation: 
+#   - check SRC variable
 #   - find a TeX file, report an error if none is found
 #     or, report an error if more than one is found
 #   - compile the found TeX file
 #
-.ONESHELL:
-test-ps:
-	@let cnt=0
+define compile_primary =
+	# check SRC variable
+	if [ "x$(SRC)" != "x" ]; then
+		# this invocation allows multiple filenames to be set in SRC
+		$(MAKE) MAKELEVEL=0 $(SRC)
+		exit 0
+	fi
+	# SRC hasn't been set or is empty
+	let cnt=0
 	for f in *.tex; do
 	    if [ -f "$${f}" ]; then
 	        let cnt++
@@ -57,11 +97,144 @@ test-ps:
 		exit 2
 	fi
 	# variable 'f' now contains the '.tex' file
-	b=`basename "$${f}" .tex`
-	$(MAKE) MAKELEVEL=0 "$${b}.ps"
+	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.$(ext)"
+endef
+
+#
+# This is the subroutine which compiles into the derivative output format
+# That is, if the default format is Postscript, it should be used to generate a PDF
+# and vice versa
+#
+# The variable 'ext' determines the extension of the default (primary) format
+# ('ps' for Postscript, 'pdf' for PDF)
+# The variable 'extsec' determines, correspondingly, the extension of the secondary format 
+# ('pdf' for Postscript primary, 'ps' for PDF primary)
+#
+#
+# Implicit derivative format compilation: 
+#   - check SRC variable
+#   - find a TeX file, report an error if none is found
+#   - if more than one found, we still can take a guess 
+#     which one to take if there is a corresponding primary ('.ps'/'.pdf') file
+#   - compile the found TeX file if it is newer than the found output file
+#   - convert it to the secondary format ('.pdf'/'.ps')
+#
+# This makes it handy to be able type e.g. 'make pdf' even though
+# there are multiple '.tex' files present
+#
+define compile_secondary = 
+	# check SRC variable
+	if [ "x$(SRC)" != "x" ]; then
+		# this invocation allows multiple filenames to be set in SRC
+		$(MAKE) MAKELEVEL=0 $(SRC)
+		exit 0
+	fi
+	# SRC hasn't been set or is empty
+	let cnt=0
+	for f in *.tex; do
+	    if [ -f "$${f}" ]; then
+	        let cnt++
+	    fi
+	    if [ "$${cnt}" -eq "2" ]; then
+		let pcnt=0
+		pfail=false
+		# go through all primary output files
+		# and see how many of them match a '.tex' file
+		for p in *.$(ext); do
+			# convert the name to '.tex'
+			t="$${p%%.$(ext)}.tex"
+			# only count those primary output files for which there is a '.tex' file
+			if [ -f "$${p}" -a -f "$${t}" ]; then
+				let pcnt++
+			fi
+			if [ "$${pcnt}" -eq "2" ]; then
+				break
+			fi
+		done
+		# fail if none or too many qualifying primary output files are found
+		if [ "$${pcnt}" -eq "0" -o "$${pcnt}" -eq "2" ]; then
+			# Give up - can't decide which one to take
+		        echo More than one LaTeX files found - specify which one to use
+		        exit 2
+		fi
+		# now we know which file to use
+		f="$${t}"
+		break
+	    fi
+	done
+	if [ "$${cnt}" -eq "0" ]; then
+		echo No LaTeX source found
+		exit 2
+	fi
+	# variable 'f' now contains the '.tex' file
+	# we let 'make' itself decide how to compile it into the secondary
+	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.$(extsec)"
+endef
+
+
+#
+# Decide whether to create PDF via PostScript or the other way around,
+# depending on whether USE_PDFLATEX is set to "true" or "false"
+#
+# The rest of Makefile will be pretty much split in two halves,
+# one corresponding to PS being the default goal, 
+# the other correponding to PDF the main goal
+#
+
+
+################################################################
+#                  Default Goal is Postscript                  #
+################################################################
+ifeq ("$(USE_PDFLATEX)", "false")
+
+
+#
+# Convert all '.tex' file names in SRC into '.ps'
+# This will speed up processing
+#
+override SRC := $(patsubst %.tex, %.ps, $(SRC))
+
+#
+# Postscript is the default goal, so 'ps' target comes first
+#
+
+#
+# Implicit PostScript compilation: 
+#   - check SRC variable
+#   - find a TeX file, report an error if none is found
+#     or, report an error if more than one is found
+#   - compile the found TeX file
+#
+.ONESHELL:
+ps:
+	@
+	# check SRC variable
+	if [ "x$(SRC)" != "x" ]; then
+		# this invocation allows multiple filenames to be set in SRC
+		$(MAKE) MAKELEVEL=0 $(SRC)
+		exit 0
+	fi
+	# SRC hasn't been set or is empty
+	let cnt=0
+	for f in *.tex; do
+	    if [ -f "$${f}" ]; then
+	        let cnt++
+	    fi
+	    if [ "$${cnt}" -eq "2" ]; then
+	        echo More than one LaTeX files found - specify which one to use
+	        exit 2
+	    fi
+	done
+	if [ "$${cnt}" -eq "0" ]; then
+		echo No LaTeX source found
+		exit 2
+	fi
+	# variable 'f' now contains the '.tex' file
+	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.ps"
 
 #
 # Implicit PDF compilation: 
+#   - check SRC variable
 #   - find a TeX file, report an error if none is found
 #   - if more than one found, we still can take a guess 
 #     which one to take if there is a corresponding '.ps' file
@@ -72,8 +245,16 @@ test-ps:
 # there are multiple '.tex' files present
 #
 .ONESHELL:
-test-pdf:
-	@let cnt=0
+pdf:
+	@
+	# check SRC variable
+	if [ "x$(SRC)" != "x" ]; then
+		# this invocation allows multiple filenames to be set in SRC
+		$(MAKE) MAKELEVEL=0 $(SRC)
+		exit 0
+	fi
+	# SRC hasn't been set or is empty
+	let cnt=0
 	for f in *.tex; do
 	    if [ -f "$${f}" ]; then
 	        let cnt++
@@ -85,8 +266,7 @@ test-pdf:
 		# and see how many of them match a '.tex' file
 		for p in *.ps; do
 			# convert the name to '.tex'
-			t="`basename $${p} .ps`"
-			t="$${t}.tex"
+			t="$${p%%.ps}.tex"
 			# only count those '.ps' files for which there is a '.tex' file
 			if [ -f "$${p}" -a -f "$${t}" ]; then
 				let pcnt++
@@ -112,106 +292,11 @@ test-pdf:
 	fi
 	# variable 'f' now contains the '.tex' file
 	# we let 'make' itself decide how to compile it into the '.pdf'
-	b=`basename $${f} .tex`
-	$(MAKE) MAKELEVEL=0 "$${b}.pdf"
-
-
-# goals that do not require SRC to be set
-CLEANING_GOALS = clean clean-ps clean-pdf cleanup clean-all wipe-ps wipe-pdf wipe-all
-
-# goals that do require SRC to be set
-SRC_GOALS = ps pdf
-
-# process SRC only if there are goals other than clean-type
-ifeq ("$(MAKECMDGOALS)", "")
-  # no arguments is considered as a non-cleaning goal, requiring specification of SRC
-  NONCLEANING_SRC_ARGS := "1"
-else
-  NONCLEANING_SRC_ARGS := $(filter-out $(CLEANING_GOALS), $(MAKECMDGOALS))
-  NONCLEANING_SRC_ARGS := $(filter $(SRC_GOALS), $(NONCLEANING_SRC_ARGS))
-endif
-
-# if there was at least one of SRC_GOALS supplied to 'make'
-# then we try to setup SRC ourselves
-ifneq ("$(NONCLEANING_SRC_ARGS)", "")
-    #
-    # we got here because the user wants to compile something,
-    # but he/she did not specify which file, so most likely have run
-    #         make ps        
-    # or
-    #         make pdf
-    #
-    # we will ensure that there is only one .tex file 
-    # in the current directory and take this file as the 'target'
-    # 
-
-    # check if there is at least one .tex file in the current directory
-    ifeq ("$(wildcard *.tex)", "")
-      $(error No LaTeX source found)
-    endif
-
-    # check if there are more than one .tex files in the current directory
-    SRC ?= $(shell \
-                let cnt=0; \
-                for f in *.tex; do \
-                    if [ -f "$${f}" ]; then \
-                        let cnt++; \
-                    fi; \
-                    if [ "$${cnt}" -eq "2" ]; then \
-                        echo -n "."; \
-                        exit; \
-                    fi; \
-                done; \
-                echo -n "$${f}" )
-
-    # we have assigned "." to SRC above in the case when there are more than one .tex files
-    ifeq ("$(SRC)", ".")
-        $(error More than one LaTeX files found - specify which one to use)
-    endif
-endif
-
-# strip the suffix ".tex"
-override SRC ::= $(basename $(SRC))
-
-
-#
-# Check that USE_PDFLATEX is set to something reasonable
-# The user must be completely aware of the implications of the
-# current state of this variable if decided to modify it
-#
-ifneq ("$(USE_PDFLATEX)", "true")
-ifneq ("$(USE_PDFLATEX)", "false")
-    $(error USE_PDFLATEX set to neither "true" nor "false": "$(USE_PDFLATEX)")
-endif
-endif
-
-
-#
-# Decide whether to create PDF via PostScript or the other way around,
-# depending on whether USE_PDFLATEX is set to "true" or "false"
-#
-
-.PHONY: $(SRC_GOALS)                 # There are no files such as "ps" or "pdf" exactly, 
-                                     # and if there are, they should be ignored
-
-ifneq ("$(USE_PDFLATEX)", "true")    ## Generate Postscript first
-
-# Postscript is the default goal
-ps: $(SRC).ps 
-
-pdf: $(SRC).pdf
+	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.pdf"
 
 # This is a generic rule how to create a PostScript from TeX
-#
-# Commenting the below lines because the dependency on '%.tex'
-# would cause a redundant LaTeX invocation
-#
 %.ps:: %.tex
 	latex $< && latex $< && dvips -o $@ $*.dvi
-
-#
-#%.ps:: %.tex
-#	latex "$*.tex" && latex "$*.tex" && dvips -o "$@" "$*.dvi"
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
@@ -224,9 +309,21 @@ pdf: $(SRC).pdf
 %.tex: FORCE
 	@$(MAKE) MAKELEVEL=0 "$*.ps"
 
-else                                 ## Generate PDF first via 'pdflatex'
 
-# PDF is the default goal
+################################################################
+#                     Default Goal is PDF                      #
+################################################################
+else
+
+#
+# Convert all '.tex' file names in SRC into '.pdf'
+# This will speed up processing
+#
+override SRC := $(patsubst %.tex, %.pdf, $(SRC))
+
+#
+# PDF is the default goal, so 'pdf' target comes first
+#
 pdf: $(SRC).pdf
 
 ps: $(SRC).ps
@@ -236,7 +333,7 @@ ps: $(SRC).ps
 # Commenting the below lines because the dependency on '%.tex'
 # would cause a redundant LaTeX invocation
 #
-# %.pdf: %.tex
+# %.pdf:: %.tex
 #	pdflatex $< && pdflatex $<
 #
 %.pdf:
@@ -266,8 +363,7 @@ clean:
 clean-ps: clean
 	@for file_product in *.ps; do \
 		if [ ! -f $${file_product} ]; then continue; fi; \
-		file=$$(basename $${file_product} .ps); \
-		file_tex=$${file}.tex; \
+		file_tex="$${file_product%%.ps}.tex"; \
 		if [ -f $${file_tex} ]; then \
 			echo "rm -f $${file_product}"; \
 			rm -f $${file_product}; \
@@ -279,8 +375,7 @@ clean-ps: clean
 clean-pdf: clean-ps
 	@for file_product in *.pdf; do \
 		if [ ! -f $${file_product} ]; then continue; fi; \
-		file=$$(basename $${file_product} .pdf); \
-		file_tex=$${file}.tex; \
+		file_tex="$${file_product%%.pdf}.tex"; \
 		if [ -f $${file_tex} ]; then \
 			echo "rm -f $${file_product}"; \
 			rm -f $${file_product}; \
@@ -340,8 +435,8 @@ help:
 #
 # To do:
 #
-#   * Pattern substitution in 'clean-ps' etc instead of 'basename'    
-#
+#   * finish with the 'compile_primary' and 'compile_secondary' subroutines
+#   * 'clean-ps' and 'clean-pdf' remove the primary output format when needed
 #   * File names with spaces
 #
 #
