@@ -68,7 +68,7 @@ endif
 # ('ps' for Postscript, 'pdf' for PDF)
 #
 #
-# Implicit PostScript/PDF compilation: 
+# Implicit source compilation: 
 #   - check SRC variable
 #   - find a TeX file, report an error if none is found
 #     or, report an error if more than one is found
@@ -114,9 +114,9 @@ endef
 # Implicit derivative format compilation: 
 #   - check SRC variable
 #   - find a TeX file, report an error if none is found
-#   - if more than one found, we still can take a guess 
-#     which one to take if there is a corresponding primary ('.ps'/'.pdf') file
-#   - compile the found TeX file if it is newer than the found output file
+#   - if more than one found, we still can take a guess which one to take 
+#     if there is a corresponding primary ('.ps'/'.pdf') file
+#   - compile the found TeX file
 #   - convert it to the secondary format ('.pdf'/'.ps')
 #
 # This makes it handy to be able type e.g. 'make pdf' even though
@@ -187,112 +187,28 @@ endef
 ################################################################
 ifeq ("$(USE_PDFLATEX)", "false")
 
+#
+# Set up the primary and the derivative format extensions
+#
+ext    := ps
+extsec := pdf
 
 #
 # Convert all '.tex' file names in SRC into '.ps'
 # This will speed up processing
 #
-override SRC := $(patsubst %.tex, %.ps, $(SRC))
+override SRC := $(patsubst %.tex, %.$(ext), $(SRC))
 
 #
 # Postscript is the default goal, so 'ps' target comes first
 #
-
-#
-# Implicit PostScript compilation: 
-#   - check SRC variable
-#   - find a TeX file, report an error if none is found
-#     or, report an error if more than one is found
-#   - compile the found TeX file
-#
 .ONESHELL:
 ps:
-	@
-	# check SRC variable
-	if [ "x$(SRC)" != "x" ]; then
-		# this invocation allows multiple filenames to be set in SRC
-		$(MAKE) MAKELEVEL=0 $(SRC)
-		exit 0
-	fi
-	# SRC hasn't been set or is empty
-	let cnt=0
-	for f in *.tex; do
-	    if [ -f "$${f}" ]; then
-	        let cnt++
-	    fi
-	    if [ "$${cnt}" -eq "2" ]; then
-	        echo More than one LaTeX files found - specify which one to use
-	        exit 2
-	    fi
-	done
-	if [ "$${cnt}" -eq "0" ]; then
-		echo No LaTeX source found
-		exit 2
-	fi
-	# variable 'f' now contains the '.tex' file
-	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.ps"
+	@$(compile_primary)
 
-#
-# Implicit PDF compilation: 
-#   - check SRC variable
-#   - find a TeX file, report an error if none is found
-#   - if more than one found, we still can take a guess 
-#     which one to take if there is a corresponding '.ps' file
-#   - compile the found TeX file if it's newer than the Postscript file
-#   - convert it to PDF
-#
-# This makes it handy to be able type 'make pdf' even though
-# there are multiple '.tex' files present
-#
 .ONESHELL:
 pdf:
-	@
-	# check SRC variable
-	if [ "x$(SRC)" != "x" ]; then
-		# this invocation allows multiple filenames to be set in SRC
-		$(MAKE) MAKELEVEL=0 $(SRC)
-		exit 0
-	fi
-	# SRC hasn't been set or is empty
-	let cnt=0
-	for f in *.tex; do
-	    if [ -f "$${f}" ]; then
-	        let cnt++
-	    fi
-	    if [ "$${cnt}" -eq "2" ]; then
-		let pcnt=0
-		pfail=false
-		# go through all '.ps' files
-		# and see how many of them match a '.tex' file
-		for p in *.ps; do
-			# convert the name to '.tex'
-			t="$${p%%.ps}.tex"
-			# only count those '.ps' files for which there is a '.tex' file
-			if [ -f "$${p}" -a -f "$${t}" ]; then
-				let pcnt++
-			fi
-			if [ "$${pcnt}" -eq "2" ]; then
-				break
-			fi
-		done
-		# fail if none or too many qualifying '.ps' files are found
-		if [ "$${pcnt}" -eq "0" -o "$${pcnt}" -eq "2" ]; then
-			# Give up - can't decide which one to take
-		        echo More than one LaTeX files found - specify which one to use
-		        exit 2
-		fi
-		# now we know which file to use
-		f="$${t}"
-		break
-	    fi
-	done
-	if [ "$${cnt}" -eq "0" ]; then
-		echo No LaTeX source found
-		exit 2
-	fi
-	# variable 'f' now contains the '.tex' file
-	# we let 'make' itself decide how to compile it into the '.pdf'
-	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.pdf"
+	@$(compile_secondary)
 
 # This is a generic rule how to create a PostScript from TeX
 %.ps:: %.tex
@@ -301,13 +217,7 @@ pdf:
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
 %.pdf: %.ps %.tex
-	ps2pdf $<
-
-# This is what happens if the user has requested a TeX file as a goal
-# We're just creating a PostScript in this case
-.PHONY: FORCE
-%.tex: FORCE
-	@$(MAKE) MAKELEVEL=0 "$*.ps"
+	ps2pdf $*.$(ext)
 
 
 ################################################################
@@ -316,45 +226,55 @@ pdf:
 else
 
 #
+# Set up the primary and the derivative format extensions
+#
+ext    := pdf
+extsec := ps
+
+#
 # Convert all '.tex' file names in SRC into '.pdf'
 # This will speed up processing
 #
-override SRC := $(patsubst %.tex, %.pdf, $(SRC))
+override SRC := $(patsubst %.tex, %.$(ext), $(SRC))
 
 #
 # PDF is the default goal, so 'pdf' target comes first
 #
-pdf: $(SRC).pdf
+.ONESHELL:
+pdf:
+	@$(compile_primary)
 
-ps: $(SRC).ps
+.ONESHELL:
+ps:
+	@$(compile_secondary)
 
 # This is a generic rule how to create a PDF from TeX
-#
-# Commenting the below lines because the dependency on '%.tex'
-# would cause a redundant LaTeX invocation
-#
-# %.pdf:: %.tex
-#	pdflatex $< && pdflatex $<
-#
-%.pdf:
-	pdflatex "$*.tex" && pdflatex "$*.tex"
+%.pdf:: %.tex
+	pdflatex $< && pdflatex $<
 
 # This is a generic rule how to create a Postscript - generate a PDF first,
 # then convert
 %.ps: %.pdf %.tex
-	pdf2ps $<
+	pdf2ps $*.$(ext)
 
-# This is what happens if the user has requested a TeX file as a goal
-# We're just creating a PDF in this case
-.PHONY: FORCE
-%.tex: FORCE
-	pdflatex $@ && pdflatex $@
-
+################################################################
+#             The end of the format-dependent part             #
+################################################################
 endif
 
+# This is what happens if the user has requested a TeX file as a goal
+# We're just creating a Postscript or PDF in this case
+.PHONY: FORCE
+%.tex: FORCE
+	@$(MAKE) MAKELEVEL=0 "$*.$(ext)"
 
-.PHONY: $(CLEANING_GOALS)                             # The goals such as "clean" are purely logical,
-                                                      # and if there are files with these names by any coincidence, 
+
+################################################################
+#                     Clean up targets                         #
+################################################################
+
+.PHONY: clean clean-ps clean-pdf cleanup clean-all    # The goals such as "clean" are purely logical,
+.PHONY: wipe-ps wipe-pdf wipe-all                     # and if there are files with these names by any coincidence, 
                                                       # they should be ignored in work of 'make'
 
 clean:
@@ -435,7 +355,6 @@ help:
 #
 # To do:
 #
-#   * finish with the 'compile_primary' and 'compile_secondary' subroutines
 #   * 'clean-ps' and 'clean-pdf' remove the primary output format when needed
 #   * File names with spaces
 #
