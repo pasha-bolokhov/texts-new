@@ -262,6 +262,7 @@ ps:
 ################################################################
 endif
 
+
 # This is what happens if the user has requested a TeX file as a goal
 # We're just creating a Postscript or PDF in this case
 .PHONY: FORCE
@@ -280,41 +281,69 @@ endif
 clean:
 	rm -f *.aux *.dvi *.log *.toc texput.log *.bak *~
 
-clean-ps: clean
-	@for file_product in *.ps; do \
-		if [ ! -f $${file_product} ]; then continue; fi; \
-		file_tex="$${file_product%%.ps}.tex"; \
-		if [ -f $${file_tex} ]; then \
-			echo "rm -f $${file_product}"; \
-			rm -f $${file_product}; \
-		else \
-			echo "Leaving $${file_product} (no source file exists)"; \
-		fi; \
-	done;
+#
+# Perform careful cleanings: 'clean-ps' and 'clean-pdf' targets
+#
+# One of the formats '.ps' and .'pdf' is primary, the other one is derivative.
+# A request for cleaning the primary format just does that
+# A request for cleaning the secondary (derivative) format also
+# removes the primary output file
+#
+# Both requests check for the existence of the corresponding '.tex' file
+# before removing an output file
+#
+.ONESHELL:
+clean-$(ext): clean
+	@for file_product in *.$(ext)
+	do
+		if [ ! -f $${file_product} ]; then continue; fi
+		file_tex="$${file_product%%.$(ext)}.tex"
+		if [ -f $${file_tex} ]; then 
+			echo "rm -f $${file_product}"
+			rm -f $${file_product}
+		else 
+			echo "Leaving $${file_product} (no source file exists)"
+		fi
+	done
+	@$(PERFORM_CLEAN_OUTPUT_FILES)
 
-clean-pdf: clean-ps
-	@for file_product in *.pdf; do \
-		if [ ! -f $${file_product} ]; then continue; fi; \
-		file_tex="$${file_product%%.pdf}.tex"; \
-		if [ -f $${file_tex} ]; then \
-			echo "rm -f $${file_product}"; \
-			rm -f $${file_product}; \
-		else \
-			echo "Leaving $${file_product} (no source file exists)"; \
-		fi; \
-	done;
+.ONESHELL:
+clean-$(extsec): clean-$(ext)
+	@for file_product in *.$(extsec)
+	do
+		if [ ! -f $${file_product} ]; then continue; fi
+		file_tex="$${file_product%%.$(extsec)}.tex"
+		if [ -f $${file_tex} ]; then 
+			echo "rm -f $${file_product}"
+			rm -f $${file_product}
+		else 
+			echo "Leaving $${file_product} (no source file exists)"
+		fi
+	done
 
-cleanup: clean-pdf
 
-clean-all: clean-pdf
+#
+# A couple of additional targets provided for convenience
+#
+cleanup: clean-$(extsec)
 
-wipe-ps: clean
-	rm -f *.ps
+clean-all: clean-$(extsec)
 
-wipe-pdf: wipe-ps
+#
+# The same sequence of removal occurs with 'wipe' targets:
+# if the secondary output format is requested to be "wiped',
+# the corresponding target also removes the primary output format files
+#
+# No checks are made in 'wipe' targets, however
+#
+wipe-$(ext): clean
+	rm -f *.$(ext)
+
+wipe-$(extsec): wipe-$(ext)
 	rm -f *.pdf
 
-wipe-all: wipe-pdf
+wipe-all: wipe-$(extsec)
+
 
 #
 # Provide a help message upon request
