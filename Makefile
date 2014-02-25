@@ -53,6 +53,27 @@ SHELL = /bin/sh
 RM = rm -f
 
 
+#
+# Git related settings
+#
+GIT = git
+
+# You can replace these with your credentials if you like
+export GIT_AUTHOR_NAME = HEP Makefile Save Repository
+export GIT_AUTHOR_EMAIL = HEP-Makefile@localhost
+
+# This is the directory where we will store back-ups.
+# It can be altered if really needed, but generically it is suggested
+# that this directory be different from default Git directory '.git'
+# so that if at some point you decide to use Git for version control,
+# our auto-saves would not clash with that version control
+export GIT_DIR = .git-HEP-backups
+
+# This variable should be modified if 'make' is run
+# from elsewhere than the working text directory
+export GIT_WORK_TREE = .
+
+
 ################################################################
 #                                                              #
 #                    Main Technical Work                       #
