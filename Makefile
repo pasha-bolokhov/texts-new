@@ -15,6 +15,7 @@
 # "make cleanup"
 #
 
+
 ################################################################
 #                                                              #
 #                       User Controls                          #
@@ -444,7 +445,7 @@ help:
 define git_save =
 	# Check that Git exists
 	if ! hash $(GIT) 2>/dev/null; then
-		echo "Need to have 'Git' installed to use \"save/restore\" feature of HEP Makefile" 1>&2
+		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
 		exit 2
 	fi
 
@@ -479,7 +480,7 @@ endef
 define git_restore =
 	# Check that Git exists
 	if ! hash $(GIT) 2>/dev/null; then
-		echo "Need to have 'Git' installed to use \"save/restore\" feature of HEP Makefile" 1>&2
+		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
 		exit 2
 	fi
 
@@ -503,10 +504,30 @@ define git_restore =
 endef
 
 #
+# This is the essential part of the 'show-saved' target
+#
+define show_saved =
+	# Check that Git exists
+	if ! hash $(GIT) 2>/dev/null; then
+		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
+		exit 2
+	fi
+
+	# If the repository does not exist, we've nothing to do!
+	if [ ! -d $(GIT_DIR) ]; then
+	    echo 'Looks like nothing has been saved yet!' 1>&2
+	    exit 2
+	fi
+
+	# Show the list of the cached files
+	$(GIT) ls-files --cached | column
+endef
+
+#
 # The actual Git targets
 #
-.PHONY: save restore
-.ONESHELL: save restore
+.PHONY: save restore show-saved
+.ONESHELL: save restore show-saved
 
 save:
 	@$(git_save)
@@ -514,6 +535,8 @@ save:
 restore:
 	@$(git_restore)
 
+show-saved:
+	@$(show_saved)
 
 #
 #
