@@ -26,8 +26,31 @@
 # ----------                                          ----------
 
 
+#
 # Set this to "true" if 'pdflatex' is needed to be used, "false" for using just 'latex'
+#
 USE_PDFLATEX = false
+
+
+#
+# These variables determine the invocation form of the utilities that are being exploited
+# Feel free to change these if necessary
+#
+LATEX = latex
+PDFLATEX = pdflatex
+DVIPS = dvips
+PS2PDF = ps2pdf
+PDF2PS = pdf2ps
+
+# Setting the shell to avoid possible inteference with user's settings
+# (although normally this would not happen as 'make' ignores user's SHELL)
+SHELL = /bin/sh
+
+# The remove command - this would rarely be changed
+# However, you can always "disable" this variable by setting it to
+# something else, like ':' to ensure that nothing gets deleted 
+# at alls times, e.g. "make RM=: ..."
+RM = rm -f
 
 
 ################################################################
@@ -176,10 +199,6 @@ endef
 # Decide whether to create PDF via PostScript or the other way around,
 # depending on whether USE_PDFLATEX is set to "true" or "false"
 #
-# The rest of Makefile will be pretty much split in two halves,
-# one corresponding to PS being the default goal, 
-# the other correponding to PDF the main goal
-#
 
 
 ################################################################
@@ -212,12 +231,12 @@ pdf:
 
 # This is a generic rule how to create a PostScript from TeX
 %.ps:: %.tex
-	latex $< && latex $< && dvips -o $@ $*.dvi
+	$(LATEX) $< && $(LATEX) $< && $(DVIPS) -o $@ $*.dvi
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
 %.pdf: %.ps %.tex
-	ps2pdf $*.$(ext)
+	$(PS2PDF) $*.$(ext)
 
 
 ################################################################
@@ -250,12 +269,12 @@ ps:
 
 # This is a generic rule how to create a PDF from TeX
 %.pdf:: %.tex
-	pdflatex $< && pdflatex $<
+	$(PDFLATEX) $< && $(PDFLATEX) $<
 
 # This is a generic rule how to create a Postscript - generate a PDF first,
 # then convert
 %.ps: %.pdf %.tex
-	pdf2ps $*.$(ext)
+	$(pdf2ps) $*.$(ext)
 
 ################################################################
 #             The end of the format-dependent part             #
@@ -279,7 +298,7 @@ endif
                                                       # they should be ignored in work of 'make'
 
 clean:
-	rm -f *.aux *.dvi *.log *.toc texput.log *.bak *~
+	$(RM) *.aux *.dvi *.log *.toc texput.log *.bak *~
 
 #
 # Perform careful cleanings: 'clean-ps' and 'clean-pdf' targets
@@ -299,8 +318,8 @@ clean-$(ext): clean
 		if [ ! -f $${file_product} ]; then continue; fi
 		file_tex="$${file_product%%.$(ext)}.tex"
 		if [ -f $${file_tex} ]; then 
-			echo "rm -f $${file_product}"
-			rm -f $${file_product}
+			echo "$(RM) $${file_product}"
+			$(RM) $${file_product}
 		else 
 			echo "Leaving $${file_product} (no source file exists)"
 		fi
@@ -314,8 +333,8 @@ clean-$(extsec): clean-$(ext)
 		if [ ! -f $${file_product} ]; then continue; fi
 		file_tex="$${file_product%%.$(extsec)}.tex"
 		if [ -f $${file_tex} ]; then 
-			echo "rm -f $${file_product}"
-			rm -f $${file_product}
+			echo "$(RM) $${file_product}"
+			$(RM) $${file_product}
 		else 
 			echo "Leaving $${file_product} (no source file exists)"
 		fi
@@ -337,10 +356,10 @@ clean-all: clean-$(extsec)
 # No checks are made in 'wipe' targets, however
 #
 wipe-$(ext): clean
-	rm -f *.$(ext)
+	$(RM) *.$(ext)
 
 wipe-$(extsec): wipe-$(ext)
-	rm -f *.pdf
+	$(RM) *.pdf
 
 wipe-all: wipe-$(extsec)
 
@@ -384,8 +403,11 @@ help:
 #
 # To do:
 #
-#   * 'clean-ps' and 'clean-pdf' remove the primary output format when needed
 #   * File names with spaces
+#   * Documentation
+#   * Enable variables for all tools that are used, such as LATEX, etc
+#   * Check version and origin of 'make'
+#   * Make 'Makefile' as much GNU-compliant as possible
 #
 #
 
