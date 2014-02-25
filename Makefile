@@ -420,6 +420,101 @@ help:
 .DEFAULT:
 	@echo "Don't know how to process '$<' (file name correct?), try \"make help\" for help"
 
+
+################################################################
+#                                                              #
+#                      Backup with Git                         #
+#                                                              #
+################################################################
+
+#
+# This is the essential part of the 'save' procedure.
+#
+# Every time we first check if we need to initialize the repository.
+# If we do, we create a repository in a directory which is by default different from '.git'
+# so it does not clash with possible version control exploited by the user.
+# The repository itself needs to be put into the list of ignores, 
+# as otherwise 'git' will add the repository into itself.
+#
+# We check whether any changes in fact have been made by the user ('git status'),
+# stage *all* files without exceptions ('git add -A'),
+# and add them into the repository ('git commit') with 
+# a message that contains the current time for logging purposes
+#
+define git_save =
+	# Check that Git exists
+	if ! hash $(GIT) 2>/dev/null; then
+		echo "Need to have 'Git' installed to use \"save/restore\" feature of HEP Makefile" 1>&2
+		exit 2
+	fi
+
+	# Create a repository if does not exist yet
+	if [ ! -d $(GIT_DIR) ]; then
+		$(GIT) init || exit $?
+		echo "$(GIT_DIR)/" > $(GIT_DIR)/info/exclude         # Make 'git' ignore its own repository
+	fi
+
+	# Stage all modified, added and deleted files
+	$(GIT) add -A || exit $$?
+
+	# Now check whether anything has changed at all
+	if $(GIT) status | grep "working directory clean" > /dev/null; then
+		echo "No changes found"
+		exit
+	fi
+
+	# Use date as the essential part of the commit message
+	MESSAGE="HEP Makefile Backup performed on $$(date)"
+
+	# Go ahead and commit it in
+	$(GIT) commit -m "$${MESSAGE}"
+endef
+
+
+#
+# This is the essential part of the 'restore' procedure
+#
+#  
+#
+define git_restore =
+	# Check that Git exists
+	if ! hash $(GIT) 2>/dev/null; then
+		echo "Need to have 'Git' installed to use \"save/restore\" feature of HEP Makefile" 1>&2
+		exit 2
+	fi
+
+	# If the repository does not exist, we've nothing to do!
+	if [ ! -d $(GIT_DIR) ]; then
+	    echo 'Looks like nothing has been saved yet!' 1>&2
+	    exit 2
+	fi
+
+	# Print a message about files being restored
+	files=$$($(GIT) ls-files --deleted | tr \\n " ")    # Need to get rid of 'newline' character 
+                                                            # between the file names
+	if [ "x$${files}" != "x" ]; then                    
+		echo "Restoring $${files}"
+	else
+		echo "No deleted files found"
+	fi
+
+	# Sift the list of deleted files through the pipe and into 'checkout'
+	$(GIT) ls-files --deleted -z | xargs -0 git checkout -- 
+endef
+
+#
+# The actual Git targets
+#
+.PHONY: save restore
+.ONESHELL: save restore
+
+save:
+	@$(git_save)
+
+restore:
+	@$(git_restore)
+
+
 #
 #
 # To do:
@@ -429,6 +524,8 @@ help:
 #   * Enable variables for all tools that are used, such as LATEX, etc
 #   * Check version and origin of 'make'
 #   * Make 'Makefile' as much GNU-compliant as possible
+#   * Make banners hierarchical
+#   * Recursive invocation of 'make' does not pass along the name of Makefile
 #
 #
 
