@@ -1,18 +1,229 @@
 #
 #
-# Smart Makefile for running LaTeX
+# Smart Makefile for running LaTeX for HEP users
 #
-# Put the name of the source file into SRC variable
 #
 # Sample execution:
 #
-# "make ps"
+#   "make"
 #
-# "make pdf"
+#   "make pdf"
 #
-# "make clean"
+#   "make kaon.tex"
 #
-# "make cleanup"
+#   "make kaon.pdf"
+#
+#   "make clean"
+#
+#   "make cleanup"
+#
+#
+# DESCRIPTION
+# ===========
+#
+# The purpose of this Makefile is to automate the everyday LaTeX typesetting routine.
+# Namely, to automate LaTeX compilation and generation of Postscript or PDF output.
+#
+# 1. As is well-known, LaTeX usually needs two runs to generate a meaningful output
+#
+# 2. Its output is DVI, which is not satisfactory for modern user
+#
+# 3. LaTeX creates a *lot* of auxiliary files, such as 'aux', 'log', 'toc' and so on
+#
+# So users very often tend to create their own shell scripts which do LaTeX compilation,
+# namely, compile the source file twice, and then convert output to Postscript 
+# (note that 'pdflatex' generates PDF automatically, by-passing DVI).
+# As the user moves from one publication to another, they would copy their shell script,
+# and, typically, change the script accordingly, so it uses the file name of the new publication.
+# And, surely, this works alright, but it does normally require "some" shell programming
+# skills (although maybe not very advanced), and modification of your script 
+# each time you start a new paper.
+#
+# We come about with a Makefile instead, which, we argue is much more versatile than
+# such home-made scripts. 
+# There are many reasons why we choose to use a Makefile instead of a shell script,
+# and we explain them in detail at the end of this description; for now we just 
+# stress that 'make' is a very wide-spread tool, and is so old that it 
+# exists in all Unix distributions [in the end, it's often far more easy to type "make"
+# than type a name of some shell script like "./compile"].
+# Note that we are actually targeting precisely Unix or Linux users, as the users
+# of OS/X or Windows would typically use a commercial environment or integrated editors which
+# provide a certain degree of automation in terms of LaTeX typesetting.
+#
+# This Makefile is highly customizable. There are simple "user controls" (settings)
+# which alter the workflow of compilation. There are also more advanced controls 
+# which allow you to do small tricks, and finally you can just modify the core 
+# of this Makefile if there is a need and you know how to do it.
+#
+# Note that this 'Makefile' will work and is intended only for *simple* projects. 
+# If you are an experimentalist who are writing a report which includes multiple subdirectories,
+# C or Fortran source files, data files, figures, or even Makefiles of your own --
+# you are better off by yourself. This Makefile will likely not be able to automatically
+# guess your ideas about how to compile your complex report and you might find it unuseful
+# or ineffective for your needs. It may interfere with your existing assembly tools
+# (e.g. you may already have a Makefile). It's not that it's impossible to use it still,
+# and, if you are experienced with Makefiles, you can attempt to customize this script
+# to the needs of your project and find it rock.
+#
+# The same may be true for a theorist who is writing a large report
+#
+#
+# INSTALLATION: 
+# None. Just copy this Makefile into your working directory. 
+# Type "make" if impatient and see what it has for you
+#
+#
+# Examples
+# -------- 
+#
+# In order to explain the use of this Makefile, we provide illustrative examples,
+# which, we hope, will prompt the reader to immediately jump into using this tool.
+# 
+# 1. You have just ONE source TeX file for your paper in your directory, no figures.
+#    The following command will create a Postscript
+#
+#      $ make ps
+#
+#    Note that Makefile will automatically find the (only) source file in your directory,
+#    call LaTeX (twice), and convert the output into Postscript.
+#    Since you very often might need to re-compile the Postscript file, 'ps' is made a default goal,
+#    and so if you type just
+#
+#      $ make
+#
+#    you'll get a Postscript file without even giving a hint which file you want to LaTeX!
+#
+#    So yes, your steps are: put this 'Makefile' into your directory, type "make" and you get
+#    a Postscript file
+#
+#    Then, a command
+#
+#      $ make clean
+#
+#    will remove all '.aux', '.toc' files, but will leave the Postscript in place.
+#
+#    If you really need a PDF, then just use
+#
+#      $ make pdf
+#
+#    and it will convert the '.ps' file into 'pdf'. Trust me, it's faster than type 
+#
+#      $ ps2pdf AdS2xS5.ps AdS2xS5.pdf .
+#
+#    Moreover, it will *not* re-generate the '.ps' file - not unless the LaTeX source has been changed. 
+#    This is a general feature of 'make' - it will not generate an output file if it
+#    thinks the file is up-to-date.
+#    If, on the other hand, you add something new about alternative compactification manifolds
+#    to your source file, "make pdf" will first re-compile the source into '.ps' and then generate
+#    a new '.pdf'.
+#    In this sense, "make pdf" implies doing "make ps" as the first step. 
+#
+#    Now, those people who use 'pdflatex' - say, when writing a presentation - don't need
+#    a Postscript, as 'pdflatex' generates PDF automatically. Please see below in "Controls"
+#    how to switch this Makefile to using 'pdflatex' instead.
+#
+#
+#
+# 2. You have TWO (or more) LaTeX files in your directory. I would not know why.
+#    Some of them might be older versions of your text. Some of them may be figures generated
+#    by 'xfig' or a similar tool. Some of them can just be temporary pieces of text
+#    or formulas which you saved under names "tmp.tex", "t.tex", "test.tex" and so on. 
+#    Some of them can have notations, definitions or formatting that you frequently use, and include
+#    with directive '\include'.
+#
+#    We however *assume* that only one text file at a time is used as a "goal", and other
+#    files can be considered as irrelevant for the matter of compilation. 
+#    Makefile is unable to guess which file is your main text.
+#
+#    Then you have to provide the goal -
+#
+#      $ make muon-g2.tex
+#
+#    will generate a Postscript (or PDF if you've switched Makefile to use 'pdflatex').
+#    You can use the TAB key when typing the filename for bash to complete it, 
+#    so you don't have to type it all the way.
+#
+#    You can be more specific if you want,
+#
+#      $ make muon-g2.ps
+#
+#    or 
+#
+#      $ make muon-g2.pdf
+#
+#    to generate a PDF. 
+#
+#    If you just need to convert to PDF (which is a "derivative" format, i.e. obtained from Postscript),
+#    you can actually type
+#
+#      $ make pdf
+#
+#    if the Postscript file already exists (and is the only Postscript file).
+#    Makefile will realize: "there is a single Postscript corresponding to a certain TeX file,
+#    so let's generate a PDF for that file now as it most certainly is the main text file"
+#
+#    Now, if you get tired of typing "make muon-g2.tex" every time, and you know you are about
+#    to spend the next month writing that paper, you can go down below into the "User Controls"
+#    section of this Makefile, and assign your file name to the SRC variable:
+#
+#      SRC = muon-g2.tex
+#
+#    Makefile will not ask you for the file name anymore, and "make", "make ps" or "make pdf" 
+#    will be there for you.
+#    See the "Controls" section of this Description if you need details about which variable
+#    does what.
+#
+#
+#
+# 3. Texts with FIGURES. If your LaTeX file includes figures, you may be fine. But if you modify
+#    or update a figure, you will notice that 'make' will be reluctant to re-compile your 
+#    main text (and incorporate the new figure) -- it simply thinks that the Postscript is up-to-date. 
+#
+#    You have to tell 'Makefile' that your output file also depends on pictures: go to the
+#    "User Control" section below, and set up the FIGURES variable:
+#
+#      FIGURES = chirality-flip.eps  B-meson.eps  LSP-loop.eps
+#
+#    or, if you're a theorist, 
+#
+#      FIGURES = Geneva.jpg  St.Genis-Charlys-Pub.jpg  Leman-Fountain.jpg  Chamonix.jpg
+#
+#    In fact, it may not even really be figures that your Postscript output depends upon, but other kinds of files 
+#    which you may modify from time to time -- in which case an exactly similar variable with just slightly 
+#    more appropriate name is used:
+#
+#      DEPENDS = notations.tex  MSc-thesis-style.tex  PPRdarkblue.sty
+#
+#    If you do so, 'make' will know that if any of these files gets modified, it has to re-do the Postscript.
+#
+#    (You can put those file names into FIGURES instead of DEPENDS if you want, but we still think the former 
+#    variable should be reserved for names like "Fountain.jpg" and "Hiking-Jura.jpg")
+#
+#    Note: if you occasionally put into FIGURES or DEPENDS a file name that does not exist, 
+#          'make' will punch you (indeed, say you're claiming to add a picture of you skiing at Chamonix,
+#          while you actually haven't been in Chamonix)
+#
+
+
+#
+# Plan of documentation
+# =====================
+#
+# - Simple invocation
+#
+# - Specifying a file
+#
+# - Cleaning
+#
+# - Controls
+#
+# - Structure of Makefile 
+#
+# - Save/Restore
+#
+# - Why Makefile
+#
+# - Suggestions/Problems
 #
 
 
@@ -326,7 +537,7 @@ clean:
 # Perform careful cleanings: 'clean-ps' and 'clean-pdf' targets
 #
 # One of the formats '.ps' and .'pdf' is primary, the other one is derivative.
-# A request for cleaning the primary format just does that
+# A request for cleaning the primary format just does that.
 # A request for cleaning the secondary (derivative) format also
 # removes the primary output file
 #
@@ -346,7 +557,6 @@ clean-$(ext): clean
 			echo "Leaving $${file_product} (no source file exists)"
 		fi
 	done
-	@$(PERFORM_CLEAN_OUTPUT_FILES)
 
 .ONESHELL:
 clean-$(extsec): clean-$(ext)
@@ -432,7 +642,7 @@ help:
 # This is the essential part of the 'save' procedure.
 #
 # Every time we first check if we need to initialize the repository.
-# If we do, we create a repository in a directory which is by default different from '.git'
+# If we do, we create a repository which is by default different from '.git'
 # so it does not clash with possible version control exploited by the user.
 # The repository itself needs to be put into the list of ignores, 
 # as otherwise 'git' will add the repository into itself.
@@ -451,7 +661,7 @@ define git_save =
 
 	# Create a repository if does not exist yet
 	if [ ! -d $(GIT_DIR) ]; then
-		$(GIT) init || exit $?
+		$(GIT) init || exit $$?
 		echo "$(GIT_DIR)/" > $(GIT_DIR)/info/exclude         # Make 'git' ignore its own repository
 	fi
 
@@ -544,11 +754,12 @@ show-saved:
 #
 #   * File names with spaces
 #   * Documentation
-#   * Enable variables for all tools that are used, such as LATEX, etc
+#   * Figures and other dependencies
 #   * Check version and origin of 'make'
 #   * Make 'Makefile' as much GNU-compliant as possible
 #   * Make banners hierarchical
 #   * Recursive invocation of 'make' does not pass along the name of Makefile
+#   * Check for errors near the first "git ls-files" in 'git_restore'
 #
 #
 
