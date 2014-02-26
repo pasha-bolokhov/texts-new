@@ -124,7 +124,7 @@
 #
 #
 #
-# 2. You have TWO (or more) LaTeX files in your directory. I would not know why.
+# 2. You have TWO (or more) LaTeX files in your directory. We would not know why.
 #    Some of them might be older versions of your text. Some of them may be figures generated
 #    by 'xfig' or a similar tool. Some of them can just be temporary pieces of text
 #    or formulas which you saved under names "tmp.tex", "t.tex", "test.tex" and so on. 
@@ -133,7 +133,7 @@
 #
 #    We however *assume* that only one text file at a time is used as a "goal", and other
 #    files can be considered as irrelevant for the matter of compilation. 
-#    Makefile is unable to guess which file is your main text.
+#    Makefile is unable to guess which file your main text is.
 #
 #    Then you have to provide the goal -
 #
@@ -200,8 +200,8 @@
 #    variable should be reserved for names like "Fountain.jpg" and "Hiking-Jura.jpg")
 #
 #    Note: if you occasionally put into FIGURES or DEPENDS a file name that does not exist, 
-#          'make' will punch you (indeed, say you're claiming to add a picture of you skiing at Chamonix,
-#          while you actually haven't been in Chamonix)
+#          'make' will punch you (indeed, say you're declaring to add a picture of you skiing at Chamonix,
+#          while you actually haven't been in Chamonix) - you gotta get that fixed
 #
 
 
@@ -239,10 +239,29 @@
 
 
 #
+# Figures and other files your source file (and output) may depend upon.
+# You only need to add them if you plan to modify these files often
+#
+# Examples:
+#
+#     FIGURES = instan-vertex.eps   sphaleron.eps
+#
+#     DEPENDS = notations.tex   MITpresentation.sty
+#
+FIGURES = 
+DEPENDS = 
+
+
+#
 # Set this to "true" if 'pdflatex' is needed to be used, "false" for using just 'latex'
 #
 USE_PDFLATEX = false
 
+#
+# This is what gets unconditionally deleted by any 'make clean' command
+# Edit this or add other file types if seems handy
+#
+AUXILIARIES = *.aux *.dvi *.log *.toc texput.log *.bak *~
 
 #
 # These variables determine the invocation form of the utilities that are being exploited
@@ -463,12 +482,12 @@ pdf:
 	@$(compile_secondary)
 
 # This is a generic rule how to create a PostScript from TeX
-%.ps:: %.tex
+%.ps:: %.tex $(FIGURES) $(DEPENDS)
 	$(LATEX) $< && $(LATEX) $< && $(DVIPS) -o $@ $*.dvi
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
-%.pdf: %.ps %.tex
+%.pdf: %.ps %.tex $(FIGURES) $(DEPENDS)
 	$(PS2PDF) $*.$(ext)
 
 
@@ -501,12 +520,12 @@ ps:
 	@$(compile_secondary)
 
 # This is a generic rule how to create a PDF from TeX
-%.pdf:: %.tex
+%.pdf:: %.tex $(FIGURES) $(DEPENDS)
 	$(PDFLATEX) $< && $(PDFLATEX) $<
 
 # This is a generic rule how to create a Postscript - generate a PDF first,
 # then convert
-%.ps: %.pdf %.tex
+%.ps: %.pdf %.tex $(FIGURES) $(DEPENDS)
 	$(pdf2ps) $*.$(ext)
 
 ################################################################
@@ -530,8 +549,11 @@ endif
 .PHONY: wipe-ps wipe-pdf wipe-all                     # and if there are files with these names by any coincidence, 
                                                       # they should be ignored in work of 'make'
 
+#
+# The target 'clean' is always performed when any cleaning command is invoked
+#
 clean:
-	$(RM) *.aux *.dvi *.log *.toc texput.log *.bak *~
+	-$(RM) $(AUXILIARIES)
 
 #
 # Perform careful cleanings: 'clean-ps' and 'clean-pdf' targets
@@ -588,10 +610,10 @@ clean-all: clean-$(extsec)
 # No checks are made in 'wipe' targets, however
 #
 wipe-$(ext): clean
-	$(RM) *.$(ext)
+	-$(RM) *.$(ext)
 
 wipe-$(extsec): wipe-$(ext)
-	$(RM) *.pdf
+	-$(RM) *.pdf
 
 wipe-all: wipe-$(extsec)
 
@@ -754,7 +776,6 @@ show-saved:
 #
 #   * File names with spaces
 #   * Documentation
-#   * Figures and other dependencies
 #   * Check version and origin of 'make'
 #   * Make 'Makefile' as much GNU-compliant as possible
 #   * Make banners hierarchical
