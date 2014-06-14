@@ -672,7 +672,8 @@ help:
 # We check whether any changes in fact have been made by the user ('git status'),
 # stage *all* files without exceptions ('git add -A'),
 # and add them into the repository ('git commit') with 
-# a message that contains the current time for logging purposes
+# a message that contains the current time for logging purposes.
+# We also add a consequent numeric tag for easier retrieval later.
 #
 define git_save =
 	# Check that Git exists
@@ -687,11 +688,26 @@ define git_save =
 		echo "$(GIT_DIR)/" > $(GIT_DIR)/info/exclude         # Make 'git' ignore its own repository
 	fi
 
+	# Get the current tag number
+	tag=$$($(GIT) tag | sort -n | tail -1)
+	if [ "x$${tag}" = "x" ]; then
+		tag=0
+	else
+		extrasym=$$(echo $${tag} | sed 's/[0-9]//g')
+		if [ "x$${extrasym}" != "x" ]; then
+			echo "Non-numeric tag name \"$${tag}\" in repository history" 1>&2
+			exit 2
+		fi
+		# Move the tag number on
+		let tag++
+	fi
+
 	# Stage all modified, added and deleted files
 	$(GIT) add -A || exit $$?
 
 	# Now check whether anything has changed at all
-	if $(GIT) status | grep "working directory clean" > /dev/null; then
+	status=$$($(GIT) status --porcelain)
+	if [ "x$${status}" = "x" ]; then
 		echo "No changes found"
 		exit
 	fi
@@ -701,6 +717,9 @@ define git_save =
 
 	# Go ahead and commit it in
 	$(GIT) commit -m "$${MESSAGE}"
+
+	# Add a tag with a numeric name
+	$(GIT) tag $${tag}
 endef
 
 
@@ -756,10 +775,85 @@ define show_saved =
 endef
 
 #
+# This is the essential part of the 'list-saved' target
+#
+define list_saved =
+	# Check that Git exists
+	if ! hash $(GIT) 2>/dev/null; then
+		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
+		exit 2
+	fi
+
+	# If the repository does not exist, we've nothing to do!
+	if [ ! -d $(GIT_DIR) ]; then
+	    echo 'Looks like nothing has been saved yet!' 1>&2
+	    exit 2
+	fi
+
+	# Get the list of tags
+	tags=$$($(GIT) tag | sort -n)
+	if [ "x$${tags}" = "x" ]; then
+		echo No tagged revisions found
+		exit
+	fi
+
+	# Print the tags along with the corresponding committer dates
+	echo
+	echo -e "\tRevision\t\tWhen"
+	echo
+	for tag in $${tags}; do
+		date=$$($(GIT) show $${tag} --pretty="format:%cd (%cr)" | head -1)
+		echo -e "\t    $${tag}\t\t    $${date}"
+	done
+endef
+
+#
+# This is the essential part of the 'restore-%' target
+#
+# First, if there are any changes, we save them
+#
+define git_checkout =
+	# Check that Git exists
+	if ! hash $(GIT) 2>/dev/null; then
+		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
+		exit 2
+	fi
+
+	# If the repository does not exist, we've nothing to do!
+	if [ ! -d $(GIT_DIR) ]; then
+	    echo 'Looks like nothing has been saved yet!' 1>&2
+	    exit 2
+	fi
+
+	# Check whether the requested tag exists
+	tag=$$(echo $@ | sed 's/restore-//')
+	found=$$($(GIT) tag | grep "$${tag}")
+	if [ "x$${found}" = "x" ]; then
+		echo "Tag \"$${tag}\" not found in repository history" 1>&2
+		exit 2
+	fi
+
+	# See if anything needs to be saved first
+	status=$$($(GIT) status --porcelain)
+	if [ "x$${status}" != "x" ]; then
+		echo Saving changes first...
+		$(MAKE) MAKELEVEL=0 save
+	fi
+
+	# Finally, do the checkout
+	echo
+	echo "Checking out \"$${tag}\""...
+	$(GIT) checkout -b tmp $${tag} > /dev/null
+
+	# Reset the master to the current position
+	$(GIT) branch -M tmp master
+endef
+
+#
 # The actual Git targets
 #
-.PHONY: save restore show-saved
-.ONESHELL: save restore show-saved
+.PHONY: save restore show-saved list-saved
+.ONESHELL: save restore show-saved list-saved
 
 save:
 	@$(git_save)
@@ -769,6 +863,12 @@ restore:
 
 show-saved:
 	@$(show_saved)
+
+list-saved:
+	@$(list_saved)
+
+restore-%:
+	@$(git_checkout)
 
 #
 #
@@ -781,6 +881,7 @@ show-saved:
 #   * Make banners hierarchical
 #   * Recursive invocation of 'make' does not pass along the name of Makefile
 #   * Check for errors near the first "git ls-files" in 'git_restore'
+#   * Move various common checks (such as whether 'git' exists) into variables
 #
 #
 
