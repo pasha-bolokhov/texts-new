@@ -724,11 +724,11 @@ endef
 
 
 #
-# This is the essential part of the 'restore' procedure
+# This is the essential part of the 'unerase' procedure
 #
 #  
 #
-define git_restore =
+define git_unerase =
 	# Check that Git exists
 	if ! hash $(GIT) 2>/dev/null; then
 		echo "Need to have 'Git' installed to use \"save/restore\" features of HEP Makefile" 1>&2
@@ -858,8 +858,8 @@ endef
 save:
 	@$(git_save)
 
-restore:
-	@$(git_restore)
+unerase:
+	@$(git_unerase)
 
 show-saved:
 	@$(show_saved)
