@@ -723,11 +723,21 @@ define git_save =
 	MESSAGE="HEP Makefile Backup performed on $$(date)"
 
 	# Go ahead and commit it in
-	$(GIT) commit -m "$${MESSAGE}"
+	$(GIT) commit -m "$${MESSAGE}" || { 
+		errno=$$?
+		echo -n "Commit failed (errno $${errno}). Attempting to unstage changes... " 1>&2
+		$(GIT) reset || exit $$?
+		echo "done" 1>&2
+		exit $${errno}
+	}
 
 	# Add a tag with a numeric name
-	$(GIT) tag $${tag} ||
-	echo "Wasn't able to create a numeric tag -- won't be able to easily restore this version" 1>&2
+	$(GIT) tag $${tag} || {
+		errno=$$?
+		echo "Wasn't able to create a numeric tag -- won't be able to easily restore this version" 1>&2
+		exit $${errno}
+	}
+	echo "Saved the working state with a tag \"$${tag}\""
 endef
 
 
