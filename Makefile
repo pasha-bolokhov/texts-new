@@ -691,7 +691,8 @@ define git_save =
 	# Create a repository if does not exist yet
 	if [ ! -d $(GIT_DIR) ]; then
 		$(GIT) init || exit $$?
-		echo "$(GIT_DIR)/" > $(GIT_DIR)/info/exclude         # Make 'git' ignore its own repository
+		echo "/$(GIT_DIR)/" >>$(GIT_DIR)/info/exclude		# Make 'git' ignore its own repository
+		echo "/Makefile" >>$(GIT_DIR)/info/exclude		# Ignore this Makefile as well
 	fi
 
 	# Get the current tag number
