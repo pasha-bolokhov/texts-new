@@ -305,6 +305,12 @@ export GIT_DIR = .git-HEP-backups
 export GIT_WORK_TREE = .
 
 
+#
+# HEP-LaTeX-Makefile project on GitHub
+#
+HEP_LATEX_MAKEFILE_ON_GITHUB = https://github.com/pasha-bolokhov/HEP-LaTeX-Makefile/raw/master/Makefile
+USE_CURL = true
+
 ################################################################
 #                                                              #
 #                    Main Technical Work                       #
@@ -357,10 +363,10 @@ define compile_primary =
 		exit 0
 	fi
 	# SRC hasn't been set or is empty
-	let cnt=0
+	(( cnt = 0 ))
 	for f in *.tex; do
 	    if [ -f "$${f}" ]; then
-	        let cnt++
+	        (( cnt++ ))
 	    fi
 	    if [ "$${cnt}" -eq "2" ]; then
 	        echo More than one LaTeX files found - specify which one to use
@@ -405,13 +411,13 @@ define compile_secondary =
 		exit 0
 	fi
 	# SRC hasn't been set or is empty
-	let cnt=0
+	(( cnt=0 ))
 	for f in *.tex; do
 	    if [ -f "$${f}" ]; then
-	        let cnt++
+	        (( cnt++ ))
 	    fi
 	    if [ "$${cnt}" -eq "2" ]; then
-		let pcnt=0
+		(( pcnt = 0 ))
 		pfail=false
 		# go through all primary output files
 		# and see how many of them match a '.tex' file
@@ -420,7 +426,7 @@ define compile_secondary =
 			t="$${p%%.$(ext)}.tex"
 			# only count those primary output files for which there is a '.tex' file
 			if [ -f "$${p}" -a -f "$${t}" ]; then
-				let pcnt++
+				(( pcnt++ ))
 			fi
 			if [ "$${pcnt}" -eq "2" ]; then
 				break
@@ -691,7 +697,7 @@ define git_save =
 	# Get the current tag number
 	tag=$$($(GIT) tag | sort -n | tail -1)
 	if [ "x$${tag}" = "x" ]; then
-		tag=0
+		(( tag = 0 ))
 	else
 		extrasym=$$(echo $${tag} | sed 's/[0-9]//g')
 		if [ "x$${extrasym}" != "x" ]; then
@@ -699,7 +705,7 @@ define git_save =
 			exit 2
 		fi
 		# Move the tag number on
-		let tag++
+		(( tag++ ))
 	fi
 
 	# Stage all modified, added and deleted files
@@ -719,7 +725,8 @@ define git_save =
 	$(GIT) commit -m "$${MESSAGE}"
 
 	# Add a tag with a numeric name
-	$(GIT) tag $${tag}
+	$(GIT) tag $${tag} ||
+	echo "Wasn't able to create a numeric tag -- won't be able to easily restore this version" 1>&2
 endef
 
 
@@ -810,7 +817,9 @@ endef
 #
 # This is the essential part of the 'restore-%' target
 #
-# First, if there are any changes, we save them
+# First, if there are any changes, we save them. 
+# Check out the requested tag and move the 'master' branch
+# to point to the current tag
 #
 define git_checkout =
 	# Check that Git exists
@@ -850,10 +859,59 @@ define git_checkout =
 endef
 
 #
+# This is the essential part of the 'update-make' target
+#
+define update_make =
+	# Check if we have "curl" or "wget"
+	if [ "x$(USE_CURL)" = "xtrue" ]; then
+		use_curl=1
+		if ! hash curl 2>/dev/null; then
+			if ! hash wget 2>/dev/null; then
+				echo "Need to have \"curl\" or \"wget\" installed" 1>&2
+				exit 2
+			fi
+			use_curl=0
+		fi
+	elif [ "x$(USE_CURL)" = "xfalse" ]; then
+		if ! hash wget 2>/dev/null; then
+			echo "Need to have \"curl\" or \"wget\" installed" 1>&2
+			exit 2
+		fi
+		use_curl=0
+	else
+		echo "USE_CURL must be either \"true\" or \"false\", but not \"$(USE_CURL)\"" 1>&2
+		exit 2
+	fi
+
+	echo "Will now download Makefile from GitHub into \"Makefile.latest\"..." 1>&2
+	echo 1>&2
+
+	if [ $${use_curl} -eq 1 ]; then
+		curl -L -o Makefile.latest -f $(HEP_LATEX_MAKEFILE_ON_GITHUB)
+	else
+		wget -O Makefile.latest $(HEP_LATEX_MAKEFILE_ON_GITHUB)
+	fi || {
+		errno=$$?
+		echo -e "" 1>&2
+		echo -e "\tCouldn't retrieve the latest Makefile" 1>&2
+		echo -e "\tYou may try to download it yourself from:" 1>&2
+		echo -e "\t$(HEP_LATEX_MAKEFILE_ON_GITHUB)" 1>&2
+		echo -e "\t" 1>&2
+		exit $${errno}
+	}
+
+	echo "" 1>&2
+	echo "Check \"Makefile.latest\" and rename it into \"Makefile\" when ready" 1>&2
+endef
+
+
+#
 # The actual Git targets
 #
 .PHONY: save restore show-saved list-saved
+.PHONY: update-make
 .ONESHELL: save restore show-saved list-saved
+.ONESHELL: update-make
 
 save:
 	@$(git_save)
@@ -869,6 +927,9 @@ list-saved:
 
 restore-%:
 	@$(git_checkout)
+
+update-make:
+	@$(update_make)
 
 #
 #
