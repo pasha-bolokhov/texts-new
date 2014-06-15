@@ -662,6 +662,23 @@ help:
 
 ################################################################
 #                                                              #
+#                    Identification Token                      #
+#                                                              #
+################################################################
+
+#
+# This variable is used in order to distinguish this makefile from
+# any other people's makefiles they might have. A simple "grep" command
+# directed on a 'Makefile' will then be able to tell whether
+# it is a HEP-LaTeX-Makefile, or some makefile belonging to somebody's
+# project (and therefore completely irrelevant for our purposes)
+#
+HEP_LATEX_MAKEFILE_IDENTIFICATION_TOKEN = HEP_LATEX_MAKEFILE_IDENTIFICATION_TOKEN
+
+
+
+################################################################
+#                                                              #
 #                      Backup with Git                         #
 #                                                              #
 ################################################################
@@ -857,7 +874,7 @@ define git_checkout =
 	status=$$($(GIT) status --porcelain)
 	if [ "x$${status}" != "x" ]; then
 		echo Saving changes first...
-		$(MAKE) MAKELEVEL=0 save
+		$(MAKE) MAKELEVEL=0 save || exit $$?
 	fi
 
 	# Finally, do the checkout
