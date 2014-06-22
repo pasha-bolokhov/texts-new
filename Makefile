@@ -352,7 +352,7 @@ endif
 # Implicit source compilation: 
 #   - check SRC variable
 #   - find a TeX file, report an error if none is found
-#     or, report an error if more than one is found
+#     if more than one found, take the newest one
 #   - compile the found TeX file
 #
 define compile_primary =
@@ -363,20 +363,13 @@ define compile_primary =
 		exit 0
 	fi
 	# SRC hasn't been set or is empty
-	(( cnt = 0 ))
-	for f in *.tex; do
-	    if [ -f "$${f}" ]; then
-	        (( cnt++ ))
-	    fi
-	    if [ "$${cnt}" -eq "2" ]; then
-	        echo More than one LaTeX files found - specify which one to use
-	        exit 2
-	    fi
-	done
+	cnt=$$(ls *.tex 2>/dev/null | wc -l)
 	if [ "$${cnt}" -eq "0" ]; then
 		echo No LaTeX source found
 		exit 2
 	fi
+	f=$$(ls -1t *.tex | head -1)
+	echo "Picking up the most recently modified file '$${f}' as the source..."
 	# variable 'f' now contains the '.tex' file
 	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.$(ext)"
 endef
