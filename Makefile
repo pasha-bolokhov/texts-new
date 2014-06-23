@@ -227,9 +227,14 @@
 #
 
 
+
 ################################################################
 #                                                              #
-#                       User Controls                          #
+#                                                              #
+#                                                              #
+#                         User Controls                        #
+#                                                              #
+#                                                              #
 #                                                              #
 ################################################################
 
@@ -311,9 +316,15 @@ export GIT_WORK_TREE = .
 HEP_LATEX_MAKEFILE_ON_GITHUB = https://github.com/pasha-bolokhov/HEP-LaTeX-Makefile/raw/master/Makefile
 USE_CURL = true
 
+
+
 ################################################################
 #                                                              #
-#                    Main Technical Work                       #
+#                                                              #
+#                                                              #
+#                      Main Technical Work                     #
+#                                                              #
+#                                                              #
 #                                                              #
 ################################################################
 
@@ -491,7 +502,7 @@ pdf:
 
 
 ################################################################
-#                     Default Goal is PDF                      #
+#                      Default Goal is PDF                     #
 ################################################################
 else
 
@@ -541,7 +552,9 @@ endif
 
 
 ################################################################
-#                     Clean up targets                         #
+#                                                              #
+#                       Clean up targets                       #
+#                                                              #
 ################################################################
 
 .PHONY: clean clean-ps clean-pdf cleanup clean-all    # The goals such as "clean" are purely logical,
@@ -655,10 +668,9 @@ help:
 
 ################################################################
 #                                                              #
-#                    Identification Token                      #
+#                     Identification Token                     #
 #                                                              #
 ################################################################
-
 #
 # This variable is used in order to distinguish this makefile from
 # any other people's makefiles they might have. A simple "grep" command
@@ -672,7 +684,9 @@ HEP_LATEX_MAKEFILE_IDENTIFICATION_TOKEN = HEP_LATEX_MAKEFILE_IDENTIFICATION_TOKE
 
 ################################################################
 #                                                              #
-#                      Backup with Git                         #
+#                                                              #
+#                       Back up with Git                       #
+#                                                              #
 #                                                              #
 ################################################################
 
@@ -960,9 +974,8 @@ update-make:
 #   * Documentation
 #   * Check version and origin of 'make'
 #   * Make 'Makefile' as much GNU-compliant as possible
-#   * Make banners hierarchical
 #   * Recursive invocation of 'make' does not pass along the name of Makefile
-#   * Check for errors near the first "git ls-files" in 'git_restore'
+#   * Check for errors near the first "git ls-files" in 'git_unerase'
 #   * Move various common checks (such as whether 'git' exists) into variables
 #
 #
