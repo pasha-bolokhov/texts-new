@@ -133,8 +133,12 @@
 #
 #    We however *assume* that only one text file at a time is used as a "goal", and other
 #    files can be considered as irrelevant for the matter of compilation. 
-#    Makefile is unable to guess which file your main text is.
+#    Makefile is unable to guess which file your main text is, but it will pick up the
+#    *most recently* modified file. If you are doing lots of editing, this will most likely
+#    work, as you are constantly changing the main text file, thus making it the "latest modified".
 #
+#    However, at the first run of 'make', this may not work if your main file is not the
+#    one which was modified (or copied, or re-written) most recently.
 #    Then you have to provide the goal -
 #
 #      $ make muon-g2.tex
@@ -162,9 +166,9 @@
 #    Makefile will realize: "there is a single Postscript corresponding to a certain TeX file,
 #    so let's generate a PDF for that file now as it most certainly is the main text file"
 #
-#    Now, if you get tired of typing "make muon-g2.tex" every time, and you know you are about
-#    to spend the next month writing that paper, you can go down below into the "User Controls"
-#    section of this Makefile, and assign your file name to the SRC variable:
+#    In order to have Makefile compile the right LaTeX file in a stable fashion without
+#    guessing what the latest modified file was, you can just go down below into the 
+#    "User Controls" section of this Makefile, and assign your file name to the SRC variable:
 #
 #      SRC = muon-g2.tex
 #
@@ -312,6 +316,7 @@ export GIT_WORK_TREE = .
 
 #
 # HEP-LaTeX-Makefile project on GitHub
+# This is used for updating the 'Makefile'
 #
 HEP_LATEX_MAKEFILE_ON_GITHUB = https://github.com/pasha-bolokhov/HEP-LaTeX-Makefile/raw/master/Makefile
 USE_CURL = true
