@@ -361,8 +361,11 @@ endif
 # This effectively is a subroutine which compiles into the default 
 # output format (Postscript or PDF), by finding a single '.tex' file
 #
-# The variable 'ext' determines the extension of the default format
-# ('ps' for Postscript, 'pdf' for PDF)
+# The shell variable 'ext' determines the extension of the default format
+# ('ps' for Postscript, 'pdf' for PDF, 'dvi' for DVI). Note that to
+# distinguish between these formats, a SHELL variable 'ext' is used.
+# Therefore, before calling this subroutine, this shell variable has
+# to be set.
 #
 #
 # Implicit source compilation: 
@@ -387,7 +390,7 @@ define compile_primary =
 	f=$$(ls -1t *.tex | head -1)
 	echo "Picking up the most recently modified file '$${f}' as the source..."
 	# variable 'f' now contains the '.tex' file
-	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.$(ext)"
+	$(MAKE) MAKELEVEL=0 "$${f%%.tex}.$${ext}"
 endef
 
 #
@@ -427,7 +430,6 @@ define compile_secondary =
 	    fi
 	    if [ "$${cnt}" -eq "2" ]; then
 		(( pcnt = 0 ))
-		pfail=false
 		# go through all primary output files
 		# and see how many of them match a '.tex' file
 		for p in *.$(ext); do
@@ -489,20 +491,25 @@ override SRC := $(patsubst %.tex, %.$(ext), $(SRC))
 # Postscript is the default goal, so 'ps' target comes first
 #
 .ONESHELL:
-ps:
-	@$(compile_primary)
+ps dvi:
+	@ext=$@
+	$(compile_primary)
 
 .ONESHELL:
 pdf:
 	@$(compile_secondary)
 
+# This is a generic rule to create a DVI from TeX
+%.dvi:: %.tex $(FIGURES) $(DEPENDS)
+	$(LATEX) $< && $(LATEX) $<
+
 # This is a generic rule how to create a PostScript from TeX
-%.ps:: %.tex $(FIGURES) $(DEPENDS)
-	$(LATEX) $< && $(LATEX) $< && $(DVIPS) -o $@ $*.dvi
+%.ps: %.dvi
+	$(DVIPS) -o $@ $*.dvi
 
 # This is a generic rule how to create a PDF - generate a Postscript first,
 # then convert
-%.pdf: %.ps %.tex $(FIGURES) $(DEPENDS)
+%.pdf: %.ps
 	$(PS2PDF) $*.$(ext)
 
 
@@ -528,7 +535,8 @@ override SRC := $(patsubst %.tex, %.$(ext), $(SRC))
 #
 .ONESHELL:
 pdf:
-	@$(compile_primary)
+	@ext=$(ext)
+	$(compile_primary)
 
 .ONESHELL:
 ps:
@@ -540,8 +548,24 @@ ps:
 
 # This is a generic rule how to create a Postscript - generate a PDF first,
 # then convert
-%.ps: %.pdf %.tex $(FIGURES) $(DEPENDS)
-	$(pdf2ps) $*.$(ext)
+%.ps: %.pdf
+	$(PDF2PS) $*.$(ext)
+
+#
+# Cannot make a DVI with 'pdflatex'
+#
+define CANT_MAKE_DVI_MESSAGE = 
+	echo "Can't make a DVI file using PDFLaTeX" 1>&2
+	echo "Consider changing USE_PDFLATEX variable in Makefile" 1>&2
+	exit 2
+endef
+
+.ONESHELL:
+dvi:
+	@$(CANT_MAKE_DVI_MESSAGE)
+.ONESHELL:
+%.dvi:
+	@$(CANT_MAKE_DVI_MESSAGE)
 
 ################################################################
 #             The end of the format-dependent part             #
