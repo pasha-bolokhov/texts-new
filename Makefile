@@ -270,7 +270,7 @@ USE_PDFLATEX = false
 # This is what gets unconditionally deleted by any 'make clean' command
 # Edit this or add other file types if seems handy
 #
-AUXILIARIES = *.aux *.dvi *.log *.toc texput.log *.bak *~
+AUXILIARIES = *.aux *.dvi *.log *.toc *.bbl *.blg texput.log *.bak *~
 
 #
 # These variables determine the invocation form of the utilities that are being exploited
