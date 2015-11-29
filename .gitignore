@@ -1,1 +1,8 @@
+#
+*.aux
+*.dvi
+*.log
+*.toc
+texput.log
+*.bak
 *~
