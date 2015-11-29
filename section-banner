@@ -1,0 +1,236 @@
+#!/usr/bin/env perl
+#
+#
+#
+# Creates a TeX section banner of the form
+#
+#  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#  %                                                           %
+#  %                                                           %
+#  %                  I N T R O D U C T I O N                  %
+#  %                                                           %
+#  %                                                           %
+#  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#
+# Usage in the simple form:
+#    section-banner.pl "Section Title"
+#
+#
+# See the bottom of this file for options
+#
+
+use strict;
+use Getopt::Long;
+use Pod::Usage;
+
+my $TAB = " " x 8;            # We define TAB to correspond to 8 characters
+
+##
+## Parse the options first
+##
+
+#  Set the default values
+my $width = 80;               # How wide the banner is by default
+my $rank = 2;
+my $pad = 1;
+my $char = '%';
+my $case = "";                # Whether 'case' or 'c' option was given
+my $literal = "";             # Whether 'no-spaces' or 'n' option was given
+
+my $help = "";                # Whether 'help' or 'h' option was specified
+my $manual = "";              # Whether 'doc' option was specified
+
+Getopt::Long::Configure("gnu_getopt");
+GetOptions("width|w=i" => \$width,
+	   "rank|r=i" => \$rank,
+	   "pad|p=i" => \$pad,
+	   "symbol|s=s" => \$char,
+	   "case|c" => \$case,
+	   "no-spaces|n" => \$literal,
+	   "help|h" => \$help,
+           "manual" => \$manual) ||
+  die("Use '$0 --help' to see the available options\n");
+
+pod2usage(-verbose => 1) if ($help);
+pod2usage(-verbose => 2) if ($manual);
+
+#  We really care about the first character of 'char'
+$char = substr($char, 0, 1);
+
+##
+## Get the requested title
+##
+my $title = "";
+
+#  If only one argument "-" was specified, use STDIN to get the title
+if (($#ARGV == 0) && ($ARGV[0] eq "-"))
+  {
+    chomp($title = <STDIN>);
+  }
+else # or take the title from the arguments
+  {
+    $title = join(" ", @ARGV); # Join all parameters into a single string
+  }
+
+##
+## Form the banner
+##
+
+# Convert to uppercase
+if (!$case)
+  {
+    $title = uc($title);
+  }
+
+# Covert TABs into $TAB spaces
+$title =~ s/\t/$TAB/g;
+
+# Insert spaces
+if (!$literal)
+  {
+    $title =~ s/(.)/$1 /g;
+  }
+
+# Remove any trailing spaces
+$title =~ s/\s+$//;
+
+## Build the title string
+# First find out how many spaces to put
+my $extralen = $width - length($title);
+my $nspaces = ($extralen - 2) / 2;
+if ($nspaces < 0)
+  {
+    die "String too long to fit into a " . $width . " character wide banner";
+  }
+
+# If the title turns out to be of an odd length then we insert an extra space on the left
+# Note, that the current algorithm of stretching of the banner will always
+# make the title be of an odd length
+$title = $char . (" " x ($nspaces + $extralen % 2)) . $title . (" " x $nspaces) . $char;
+
+# Print the banner
+for (my $p = 0; $p < $pad; $p++)
+  {
+    print($char x $width . "\n");
+  }
+for (my $r = 0; $r < $rank; $r++)
+  {
+    print($char . " " x ($width - 2) . "$char\n" );
+  }
+print($title . "\n");
+for (my $r = 0; $r < $rank; $r++)
+  {
+    print($char . " " x ($width - 2) . "$char\n" );
+  }
+for (my $p = 0; $p < $pad; $p++)
+  {
+    print($char x $width . "\n");
+  }
+__END__
+
+=head1 NAME
+
+section-banner.pl - Create a TeX comment banner containing
+                    a title of a section
+
+=head1 SYNOPSIS
+
+section-banner.pl [options] title ... | -
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-w, --width=WIDTH>
+
+set the width of the banner to WIDTH. The default width is 80 characters
+
+=item B<-r, --rank=RANK>
+
+set the "rank" of the header (the number of extra empty commented lines) to RANK
+
+=item B<-p, --pad=PADDING>
+
+set the padding of the banner (the number of filled
+lines in the beginning and in the end) to PADDING,
+
+=item B<-s, --symbol=CHAR>
+
+set the symbol to build the banner from (e.g. for languages other than TeX), 
+the default is '%'
+
+=item B<-c, --case>
+
+preserve the case of the title, i.e. do not convert the entire title
+to the upper case
+
+=item B<-n, --no-spaces>
+
+do not insert spaces between the letters of the title
+
+=item B<-h, --help>
+
+print a help message and exit
+
+=item B<--manual>
+
+print a detailed usage manual and exit
+
+=back
+
+=head1 DESCRIPTION
+
+Creates a banner useful for marking TeX document sections,
+so that a beginning of a section is easily seen when browsing the TeX text source.
+A typical banner looks as follows:
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %                                                           %
+   %                                                           %
+   %                  I N T R O D U C T I O N                  %
+   %                                                           %
+   %                                                           %
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Optional arguments can set a custom width, rank (determines how tall the banner is
+by specifying explicitly the number of blank commented lines inserted before and
+after the title line - 2 in the example
+above), and padding (determines the number of filled commented lines inserted in
+the beginning and in the end of the banner - 1 in the example above).
+This way different types of banners can be used for different levels
+of nested subsections.
+An alternative character to draw the banner can be set up.
+Don't forget the quotes around your symbol, if necessary:
+"--symbol '*'", not just "--symbol *"
+
+If "-" is given instead of the title, then the title is read from the standard input.
+Only the first line of the standard input is used
+
+=head1 EXAMPLES
+
+The following command
+
+=over 8
+
+section-banner.pl -w 21 -r 3 -p 2 the end
+
+=back
+
+generates the following output
+
+        %%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%
+        %                   %
+        %                   %
+        %                   %
+        %   T H E   E N D   %
+        %                   %
+        %                   %
+        %                   %
+        %%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%
+
+which could then be put in the end of a TeX file.
+There is no identation of banners.
+
+=cut

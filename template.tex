@@ -1,0 +1,707 @@
+\documentclass[epsfig,12pt]{article}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{relsize}
+\usepackage{geometry}
+\geometry{letterpaper}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{slashed}
+%\usepackage{showlabels}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                     D O C U M E N T   S E T T I N G S                        %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\baselinestretch{1.1}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
+\hyphenation{con-fi-ning}
+\hyphenation{Cou-lomb}
+\hyphenation{Yan-ki-e-lo-wicz}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                      C O M M O N   D E F I N I T I O N S                     %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\beq{\begin{equation}}
+\def\eeq{\end{equation}}
+\def\beqn{\begin{eqnarray}}
+\def\eeqn{\end{eqnarray}}
+\def\beqn{\begin{eqnarray}}
+\def\eeqn{\end{eqnarray}}
+\def\nn{\nonumber}
+\def\ba{\beq\new\begin{array}{c}}
+\def\ea{\end{array}\eeq}
+\def\be{\ba}
+\def\ee{\ea}
+
+
+\newcommand{\nfour}{${\cal N}=4\;$}
+\newcommand{\none}{${\mathcal N}=1\,$}
+\newcommand{\nonen}{${\mathcal N}=1$}
+\newcommand{\ntwo}{${\mathcal N}=2$}
+\newcommand{\ntt}{${\mathcal N}=(2,2)\,$}
+\newcommand{\nzt}{${\mathcal N}=(0,2)\,$}
+\newcommand{\ntwon}{${\mathcal N}=2$}
+\newcommand{\ntwot}{${\mathcal N}= \left(2,2\right) $ }
+\newcommand{\ntwoo}{${\mathcal N}= \left(0,2\right) $ }
+\newcommand{\ntwoon}{${\mathcal N}= \left(0,2\right)$}
+
+
+\newcommand{\ca}{{\mathcal A}}
+\newcommand{\cell}{{\mathcal L}}
+\newcommand{\cw}{{\mathcal W}}
+\newcommand{\cs}{{\mathcal S}}
+\newcommand{\vp}{\varphi}
+\newcommand{\pt}{\partial}
+\newcommand{\ve}{\varepsilon}
+\newcommand{\gs}{g^{2}}
+\newcommand{\zn}{$Z_N$}
+\newcommand{\cd}{${\mathcal D}$}
+\newcommand{\cde}{{\mathcal D}}
+\newcommand{\cf}{${\mathcal F}$}
+\newcommand{\cfe}{{\mathcal F}}
+\newcommand{\ff}{\mc{F}}
+\newcommand{\bff}{\ov{\mc{F}}}
+
+
+\newcommand{\p}{\partial}
+\newcommand{\wt}{\widetilde}
+\newcommand{\ov}{\overline}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\md}{\mathcal{D}}
+\newcommand{\ml}{\mathcal{L}}
+\newcommand{\mw}{\mathcal{W}}
+\newcommand{\ma}{\mathcal{A}}
+
+
+\newcommand{\GeV}{{\rm GeV}}
+\newcommand{\eV}{{\rm eV}}
+\newcommand{\Heff}{{\mathcal{H}_{\rm eff}}}
+\newcommand{\Leff}{{\mathcal{L}_{\rm eff}}}
+\newcommand{\el}{{\rm EM}}
+\newcommand{\uflavor}{\mathbf{1}_{\rm flavor}}
+\newcommand{\lgr}{\left\lgroup}
+\newcommand{\rgr}{\right\rgroup}
+
+
+\newcommand{\Mpl}{M_{\rm Pl}}
+\newcommand{\suc}{{{\rm SU}_{\rm C}(3)}}
+\newcommand{\sul}{{{\rm SU}_{\rm L}(2)}}
+\newcommand{\sutw}{{\rm SU}(2)}
+\newcommand{\suth}{{\rm SU}(3)}
+\newcommand{\ue}{{\rm U}(1)}
+
+
+\newcommand{\LN}{\Lambda_\text{SU($N$)}}
+\newcommand{\sunu}{{\rm SU($N$) $\times$ U(1) }}
+\newcommand{\sunun}{{\rm SU($N$) $\times$ U(1)}}
+\def\cfl {$\text{SU($N$)}_{\rm C+F}$ }
+\def\cfln {$\text{SU($N$)}_{\rm C+F}$}
+\newcommand{\mUp}{m_{\rm U(1)}^{+}}
+\newcommand{\mUm}{m_{\rm U(1)}^{-}}
+\newcommand{\mNp}{m_\text{SU($N$)}^{+}}
+\newcommand{\mNm}{m_\text{SU($N$)}^{-}}
+\newcommand{\AU}{\mc{A}^{\rm U(1)}}
+\newcommand{\AN}{\mc{A}^\text{SU($N$)}}
+\newcommand{\aU}{a^{\rm U(1)}}
+\newcommand{\aN}{a^\text{SU($N$)}}
+\newcommand{\baU}{\ov{a}{}^{\rm U(1)}}
+\newcommand{\baN}{\ov{a}{}^\text{SU($N$)}}
+\newcommand{\lU}{\lambda^{\rm U(1)}}
+\newcommand{\lN}{\lambda^\text{SU($N$)}}
+\newcommand{\bxir}{\ov{\xi}{}_R}
+\newcommand{\bxil}{\ov{\xi}{}_L}
+\newcommand{\xir}{\xi_R}
+\newcommand{\xil}{\xi_L}
+\newcommand{\bzl}{\ov{\zeta}{}_L}
+\newcommand{\bzr}{\ov{\zeta}{}_R}
+\newcommand{\zr}{\zeta_R}
+\newcommand{\zl}{\zeta_L}
+\newcommand{\nbar}{\ov{n}}
+\newcommand{\nnbar}{n\ov{n}}
+\newcommand{\muU}{\mu_\text{U}}
+
+
+\newcommand{\cpn}{CP$^{N-1}$\,}
+\newcommand{\CPC}{CP($N-1$)$\times$C }
+\newcommand{\CPCn}{CP($N-1$)$\times$C}
+
+
+\newcommand{\lar}{\lambda_R}
+\newcommand{\lal}{\lambda_L}
+\newcommand{\larl}{\lambda_{R,L}}
+\newcommand{\lalr}{\lambda_{L,R}}
+\newcommand{\blar}{\ov{\lambda}{}_R}
+\newcommand{\blal}{\ov{\lambda}{}_L}
+\newcommand{\blarl}{\ov{\lambda}{}_{R,L}}
+\newcommand{\blalr}{\ov{\lambda}{}_{L,R}}
+
+
+\newcommand{\bgamma}{\ov{\gamma}}
+\newcommand{\bpsi}{\ov{\psi}{}}
+\newcommand{\bphi}{\ov{\phi}{}}
+\newcommand{\bxi}{\ov{\xi}{}}
+
+
+\newcommand{\qt}{\wt{q}}
+\newcommand{\bq}{\ov{q}}
+\newcommand{\bqt}{\overline{\widetilde{q}}}
+
+
+\newcommand{\eer}{\epsilon_R}
+\newcommand{\eel}{\epsilon_L}
+\newcommand{\eerl}{\epsilon_{R,L}}
+\newcommand{\eelr}{\epsilon_{L,R}}
+\newcommand{\beer}{\ov{\epsilon}{}_R}
+\newcommand{\beel}{\ov{\epsilon}{}_L}
+\newcommand{\beerl}{\ov{\epsilon}{}_{R,L}}
+\newcommand{\beelr}{\ov{\epsilon}{}_{L,R}}
+
+
+\newcommand{\bi}{{\bar \imath}}
+\newcommand{\bj}{{\bar \jmath}}
+\newcommand{\bk}{{\bar k}}
+\newcommand{\bl}{{\bar l}}
+\newcommand{\bmm}{{\bar m}}
+
+
+\newcommand{\nz}{{n^{(0)}}}
+\newcommand{\no}{{n^{(1)}}}
+\newcommand{\bnz}{{\ov{n}{}^{(0)}}}
+\newcommand{\bno}{{\ov{n}{}^{(1)}}}
+\newcommand{\Dz}{{D^{(0)}}}
+\newcommand{\Do}{{D^{(1)}}}
+\newcommand{\bDz}{{\ov{D}{}^{(0)}}}
+\newcommand{\bDo}{{\ov{D}{}^{(1)}}}
+\newcommand{\sigz}{{\sigma^{(0)}}}
+\newcommand{\sigo}{{\sigma^{(1)}}}
+\newcommand{\bsigz}{{\ov{\sigma}{}^{(0)}}}
+\newcommand{\bsigo}{{\ov{\sigma}{}^{(1)}}}
+
+
+\newcommand{\rrenz}{{r_\text{ren}^{(0)}}}
+\newcommand{\bren}{{\beta_\text{ren}}}
+
+
+\newcommand{\Tr}{\text{Tr}}
+\newcommand{\Ts}{\text{Ts}}
+\newcommand{\dm}{\hat{{\scriptstyle \Delta} m}}
+\newcommand{\dmdag}{\hat{{\scriptstyle \Delta} m}{}^\dag}
+\newcommand{\mhat}{\widehat{m}}
+\newcommand{\deltam}{{\scriptstyle \Delta} m}
+\newcommand{\nvac}{\vec{n}{}_\text{vac}}
+
+
+\newcommand{\ie}{{\it i.e.}~}
+\newcommand{\eg}{{\it e.g.}~}
+\newcommand{\ansatz}{{\it ansatz} }
+
+
+
+
+\begin{document}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                            T I T L E   P A G E                               %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{titlepage}
+
+
+\begin{flushright}
+FTPI-MINN-XX/XX, UMN-TH-XXXX/XX\\
+%January 5/2010/DRAFT
+\end{flushright}
+
+\begin{center}
+{  \Large \bf  Large-\boldmath{$N$} Solution of the Heterotic\\[2mm]
+ CP\boldmath{$(N-1)$} Model with Twisted Masses}
+\end{center}
+
+
+
+\vspace{2mm}
+
+\begin{center}
+
+ {\large
+ \bf   Pavel A.~Bolokhov$^{\,a,b}$,  Mikhail Shifman$^{\,c}$ and \bf Alexei Yung$^{\,\,c,d}$}
+\end {center}
+
+\begin{center}
+
+$^a${\it Theoretical Physics Department, St.Petersburg State University, Ulyanovskaya~1, 
+	 Peterhof, St.Petersburg, 198504, Russia}\\
+$^b${\it Department of Physics and Astronomy, University of Victoria,\\
+    Victoria, BC, V8P 1A1 Canada}\\
+$^c${\it  William I. Fine Theoretical Physics Institute,
+University of Minnesota,
+Minneapolis, MN 55455, USA}\\
+$^{d}${\it Petersburg Nuclear Physics Institute, Gatchina, St. Petersburg
+188300, Russia
+}
+\end{center}
+
+
+
+
+\begin{center}
+{\large\bf Abstract}
+\end{center}
+
+\hspace{0.3cm}
+We address a number of unanswered questions in the \nzt-deformed \cpn model with
+twisted masses.  In particular, we
+complete the program of solving \cpn model with twisted masses in the large-$N$
+limit. In hep-th/0512153 nonsupersymmetric version of the model with the $Z_N$
+symmetric twisted masses was analyzed in the framework of Witten's method. In arXiv:0803.0698 
+this analysis was extended:  the 
+large-$N$ solution of the heterotic \nzt \cpn model with no twisted masses was found.
+Here we solve this  model with the twisted
+masses switched on. Dynamical scenarios at large and small $m$ are studied
+($m$ is the twisted mass scale).
+We found three distinct phases and two phase transitions on the $m$ plane. 
+Two phases with the spontaneously broken 
+\zn-symmetry are separated by a phase with unbroken \zn. 
+This latter phase is characterized by a unique vacuum and confinement of all U(1) charged fields (``quarks").
+In the broken phases (one of them is at strong coupling) there are $N$ degenerate vacua
+and no confinement, similarly to the situation in the \ntt model.
+Supersymmetry is spontaneously broken everywhere except a circle $|m|=\Lambda$ in the \zn-unbroken phase. 
+
+Related issues are considered. In particular,
+we discuss the mirror representation for the heterotic model in a certain limiting case.
+
+\vspace{2cm}
+
+
+\end{titlepage}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                            I N T R O D U C T I O N                           %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\setcounter{equation}{0}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                             C O N C L U S I O N S                            %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                              %
+%                                                                              %
+%                          A C K N O W L E D G M E N T S                       %
+%                                                                              %
+%                                                                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgments}
+
+\small
+\begin{thebibliography}{99}
+\itemsep -2pt
+
+  \bibitem{HT1}
+  A.~Hanany and D.~Tong,
+  %``Vortices, instantons and branes,''
+  JHEP {\bf 0307}, 037 (2003)
+  [hep-th/0306150].
+  %%CITATION = HEP-TH 0306150;%%
+
+  \bibitem{SYmon}
+  M.~Shifman and A.~Yung,
+  %``Non-Abelian string junctions as confined monopoles,''
+  Phys.\ Rev.\ D {\bf 70}, 045004 (2004)
+  [hep-th/0403149].
+  %%CITATION = HEP-TH 0403149;%%
+
+  \bibitem{HT2}
+  A.~Hanany and D.~Tong,
+  %``Vortex strings and four-dimensional gauge dynamics,''
+  JHEP {\bf 0404}, 066 (2004)
+  [hep-th/0403158].
+  %%CITATION = HEP-TH 0403158;%%
+
+  \bibitem{Trev}
+  D.~Tong,
+  %``Quantum Vortex Strings: A Review,''
+  Annals Phys.\  {\bf 324}, 30 (2009)
+  [arXiv:0809.5060 [hep-th]];
+  %%CITATION = APNYA,324,30;%%
+  M.~Eto, Y.~Isozumi, M.~Nitta, K.~Ohashi and N.~Sakai,
+  %``Solitons in the Higgs phase: The moduli matrix approach,''
+  J.\ Phys.\ A  {\bf 39}, R315 (2006)
+  [arXiv:hep-th/0602170];
+  %%CITATION = JPAGB,A39,R315;%%
+  K.~Konishi,
+  %``The magnetic monopoles seventy-five years later,''
+  Lect.\ Notes Phys.\  {\bf 737}, 471 (2008)
+  [arXiv:hep-th/0702102];
+  %%CITATION = LNPHA,737,471;%%
+  M.~Shifman and A.~Yung,
+  {\sl Supersymmetric Solitons,}
+  (Cambridge University Press, 2009).
+  %%CITATION = HEP-TH/0703267;%%
+
+  \bibitem{W79}
+  E.~Witten,
+  %``Instantons, The Quark Model, And The 1/N Expansion,''
+  Nucl.\ Phys.\ B {\bf 149}, 285 (1979).
+  %%CITATION = NUPHA,B149,285;%%
+
+  \bibitem{W93}
+  E.~Witten,
+  %``Phases of N = 2 theories in two dimensions,''
+  Nucl.\ Phys.\ B {\bf 403}, 159 (1993)
+  [hep-th/9301042].
+  %%CITATION = HEP-TH 9301042;%%
+  
+  \bibitem{dadvl}
+  A.~D'Adda, P.~Di Vecchia and M.~L\"{u}scher,
+  %``Confinement And Chiral Symmetry Breaking In Cp**N-1 Models With Quarks,''
+  Nucl.\ Phys.\  B {\bf 152}, 125 (1979).
+  %%CITATION = NUPHA,B152,125;%%
+  
+  \bibitem{SYhet}
+  M.~Shifman and A.~Yung,
+  %``Large-N Solution of the Heterotic N=(0,2) Two-Dimensional CP(N-1) Model,''
+  Phys.\ Rev.\  D {\bf 77}, 125017 (2008)
+  [arXiv:0803.0698 [hep-th]].
+  %%CITATION = PHRVA,D77,125017;%%
+  
+  \bibitem{MR1}
+  K.~Hori and C.~Vafa,
+  {\em Mirror symmetry,}
+  arXiv:hep-th/0002222.
+  %%CITATION = HEP-TH/0002222;%%
+  
+  \bibitem{MR2}
+  E.~Frenkel and A.~Losev,
+  %``Mirror symmetry in two steps: A-I-B,''
+  Commun.\ Math.\ Phys.\  {\bf 269}, 39 (2006)
+  [arXiv:hep-th/0505131].
+  %%CITATION = CMPHA,269,39;%%
+  
+  \bibitem{EdTo}
+  M.~Edalati and D.~Tong,
+  %``Heterotic vortex strings,''
+  JHEP {\bf 0705}, 005 (2007)
+  [arXiv:hep-th/0703045].
+  %%CITATION = JHEPA,0705,005;%%
+  
+\bibitem{SY1}
+  M.~Shifman and A.~Yung,
+  %``Heterotic Flux Tubes in N=2 SQCD with N=1 Preserving Deformations,''
+  Phys.\ Rev.\  D {\bf 77}, 125016 (2008)
+  [arXiv:0803.0158 [hep-th]].
+  %%CITATION = PHRVA,D77,125016;%%
+  
+  \bibitem{BSY1}
+  P.~A.~Bolokhov, M.~Shifman and A.~Yung,
+  %``Description of the Heterotic String Solutions in U(N) SQCD,''
+  Phys. \ Rev. \ D {\bf 79}, 085015 (2009) (Erratum: Phys. Rev. D 80, 049902 (2009))
+  [arXiv:0901.4603 [hep-th]].
+  %%CITATION = ARXIV:0901.4603;%%
+  
+  \bibitem{BSY2}
+  P.~A.~Bolokhov, M.~Shifman and A.~Yung,
+  %``Description of the Heterotic String Solutions in the M Model,''
+  Phys. \ Rev. \ D {\bf 79}, 106001 (2009) (Erratum: Phys. Rev. D 80, 049903 (2009))
+  [arXiv:0903.1089 [hep-th]].
+  %%CITATION = ARXIV:0903.1089;%%  
+  
+  \bibitem{BSY3}
+  P.~A.~Bolokhov, M.~Shifman and A.~Yung,
+  %``Heterotic N=(0,2) CP(N-1) Model with Twisted Masses,''
+  Phys.\ Rev.\  D {\bf 81}, 065025 (2010)
+  [arXiv:0907.2715 [hep-th]].
+  %%CITATION = PHRVA,D81,065025;%%
+  
+  \bibitem{orco}
+  E.~Witten,
+  %``A Supersymmetric Form Of The Nonlinear Sigma Model In Two-Dimensions,''
+  Phys.\ Rev.\  D {\bf 16}, 2991 (1977);
+  %%CITATION = PHRVA,D16,2991;%%
+  P.~Di Vecchia and S.~Ferrara,
+  %``Classical Solutions In Two-Dimensional Supersymmetric Field Theories,''
+  Nucl.\ Phys.\  B {\bf 130}, 93 (1977).
+  %%CITATION = NUPHA,B130,93;%%
+
+  \bibitem{Bruno}
+  B.~Zumino,
+  %``Supersymmetry And Kahler Manifolds,''
+  Phys.\ Lett.\  B {\bf 87}, 203 (1979).
+  %%CITATION = PHLTA,B87,203;%%
+
+  \bibitem{rev1}
+  V.~A.~Novikov, M.~A.~Shifman, A.~I.~Vainshtein and V.~I.~Zakharov,
+  %``Two-Dimensional Sigma Models: Modeling Nonperturbative Effects Of Quantum
+  %Chromodynamics,''
+  Phys.\ Rept.\  {\bf 116}, 103 (1984).
+  %%CITATION = PRPLC,116,103;%%
+   
+  \bibitem{rev2} 
+  A.~M.~Perelomov,
+  %``SUPERSYMMETRIC CHIRAL MODELS: GEOMETRICAL ASPECTS,''
+  Phys.\ Rept.\  {\bf 174}, 229 (1989).
+  %%CITATION = PRPLC,174,229;%%
+  
+  \bibitem{WI}
+  E.~Witten,
+  %``Constraints On Supersymmetry Breaking,''
+  Nucl.\ Phys.\  B {\bf 202}, 253 (1982).
+  %%CITATION = NUPHA,B202,253;%%
+  
+  \bibitem{twisted}
+  L.~Alvarez-Gaum\'{e} and D.~Z.~Freedman,
+  %``Potentials For The Supersymmetric Nonlinear Sigma Model,''
+  Commun.\ Math.\ Phys.\  {\bf 91}, 87 (1983);
+  %%CITATION = CMPHA,91,87;%%
+  S.~J.~Gates,
+  %``Superspace Formulation Of New Nonlinear Sigma Models,''
+  Nucl.\ Phys.\ B {\bf 238}, 349 (1984);
+  %%CITATION = NUPHA,B238,349;%%
+  S.~J.~Gates, C.~M.~Hull and M.~Ro\v{c}ek,
+  %``Twisted Multiplets And New Supersymmetric Nonlinear Sigma Models,''
+  Nucl.\ Phys.\ B {\bf 248}, 157 (1984).
+  %%CITATION = NUPHA,B248,157;%%
+
+  \bibitem{BelPo}
+  A.~M.~Polyakov,
+  %``Interaction Of Goldstone Particles In Two-Dimensions. Applications To
+  %Ferromagnets And Massive Yang-Mills Fields,''
+  Phys.\ Lett.\  B {\bf 59}, 79 (1975).
+  %%CITATION = PHLTA,B59,79;%%
+  
+  \bibitem{adam}
+  A.~Ritz, M.~Shifman and A.~Vainshtein,
+  %``Counting domain walls in N = 1 super Yang-Mills,''
+  Phys.\ Rev.\  D {\bf 66}, 065015 (2002)
+  [arXiv:hep-th/0205083].
+  %%CITATION = PHRVA,D66,065015;%%
+  
+  \bibitem{WessBagger}
+  J. Wess and J. Bagger, {\em Supersymmetry and Supergravity}, Second Edition,
+  Princeton University Press, 1992.
+
+  \bibitem{Helgason}
+  S. Helgason, {\sl Differential geometry, Lie groups and symmetric spaces},
+  Academic Press, New York, 1978.
+  
+  \bibitem{Dor}
+  N.~Dorey,
+  %``The BPS spectra of two-dimensional
+  %supersymmetric gauge theories
+  %with  twisted mass terms,''
+  JHEP {\bf 9811}, 005 (1998) [hep-th/9806056].
+  %%CITATION = HEP-TH 9806056;%%
+
+  \bibitem{Witten:2005px}
+  E.~Witten,
+  {\em Two-dimensional models with (0,2) supersymmetry: Perturbative aspects,}
+  arXiv:hep-th/0504078.
+  %%CITATION = HEP-TH/0504078;%%
+  
+  \bibitem{GSYphtr}
+  A.~Gorsky, M.~Shifman and A.~Yung,
+   %``Higgs and Coulomb/confining phases in "twisted-mass" deformed \cpn model,''
+  Phys.\ Rev.\ D {\bf 73}, 065011 (2006)
+  [hep-th/0512153].
+
+  \bibitem{Coleman}
+  S.~R.~Coleman,
+  %``More About The Massive Schwinger Model,''
+  Annals Phys.  {\bf 101}, 239 (1976).
+
+  \bibitem{GSY05}
+  A.~Gorsky, M.~Shifman and A.~Yung,
+   %``Non-Abelian Meissner effect in Yang-Mills theories at weak
+  %coupling,''
+  Phys.\ Rev.\ D {\bf 71}, 045010 (2005)
+  [hep-th/0412082].
+  %%CITATION = HEP-TH 0412082;%%
+
+  \bibitem{Ferrari}
+  F.~Ferrari,
+  % ``LARGE N AND DOUBLE SCALING LIMITS IN TWO-DIMENSIONS.''
+  JHEP {\bf 0205} 044 (2002)
+  [hep-th/0202002].
+
+  \bibitem{Ferrari2}
+  F.~Ferrari,
+  %'' NONSUPERSYMMETRIC COUSINS OF SUPERSYMMETRIC GAUGE THEORIES:
+  %QUANTUM SPACE OF PARAMETERS AND DOUBLE SCALING LIMITS.''
+   Phys. Lett. {\bf B496} 212 (2000)
+  [hep-th/0003142];
+  %``A model for gauge theories with Higgs fields,''
+  JHEP {\bf 0106}, 057 (2001)
+  [hep-th/0102041].
+  %%CITATION = HEP-TH 0102041;%%
+
+  \bibitem{AdDVecSal}
+  A.~D'Adda, A.~C.~Davis, P.~DiVeccia and P.~Salamonson,
+  %"An effective action for the supersymmetric CP$^{n-1}$ models,"
+  Nucl.\ Phys.\ {\bf B222} 45 (1983).
+
+  \bibitem{ChVa}
+  S.~Cecotti and C. Vafa,
+  %"On classification of \ntwo supersymmetric theories,"
+  Comm. \ Math. \ Phys. \ {\bf 158} 569 (1993)
+  [hep-th/9211097].
+
+  \bibitem{HaHo}
+  A.~Hanany and K.~Hori,
+  %``Branes and N = 2 theories in two dimensions,''
+  Nucl.\ Phys.\  B {\bf 513}, 119 (1998)
+  [arXiv:hep-th/9707192].
+  %%CITATION = NUPHA,B513,119;%%
+
+  \bibitem{AD}
+  P. C.~Argyres and M. R.~Douglas,
+  %``New Phenomena in SU(3) Supersymmetric Gauge Theory'' 
+  Nucl. \ Phys. \ {\bf B448}, 93 (1995)   
+  [arXiv:hep-th/9505062].
+  %%CITATION = NUPHA,B448,93;%%
+  
+  \bibitem{APSW}
+  P. C. Argyres, M. R. Plesser, N. Seiberg, and E. Witten,
+  %``New N=2 Superconformal Field Theories in Four Dimensions''
+  Nucl. \ Phys.  \ {\bf B461}, 71 (1996) 
+  [arXiv:hep-th/9511154].
+  %%CITATION = NUPHA,B461,71;%%
+
+  \bibitem{SYrev}
+  M.~Shifman and A.~Yung,
+  %{\sl Supersymmetric Solitons,}
+  Rev.\ Mod.\ Phys. {\bf 79} 1139 (2007)
+  [arXiv:hep-th/0703267].
+  %%CITATION = HEP-TH/0703267;%%
+
+  \bibitem{Tonghetdyn}
+  D.~Tong,
+  %``The quantum dynamics of heterotic vortex strings,''
+  JHEP {\bf 0709}, 022 (2007)
+  [arXiv:hep-th/0703235].
+  %%CITATION = JHEPA,0709,022;%%
+  
+  \bibitem{VYan}
+  G.~Veneziano and S.~Yankielowicz,
+  %``An Effective Lagrangian For The Pure N=1 Supersymmetric Yang-Mills
+  %Theory,''
+  Phys.\ Lett.\  B {\bf 113}, 231 (1982).
+  %%CITATION = PHLTA,B113,231;%%
+  
+  \bibitem{ls}
+  A.~Losev and M.~Shifman,
+  %``N = 2 sigma model with twisted mass and superpotential: Central charges
+  %and solitons,''
+  Phys.\ Rev.\  D {\bf 68}, 045006 (2003)
+  [arXiv:hep-th/0304003].
+  %%CITATION = PHRVA,D68,045006;%%
+  
+  \bibitem{ls1}
+  M.~Shifman, A.~Vainshtein and R.~Zwicky,
+  %``Central charge anomalies in 2D sigma models with twisted mass,''
+  J.\ Phys.\ A  {\bf 39}, 13005 (2006)
+  [arXiv:hep-th/0602004].
+  %%CITATION = JPAGB,A39,13005;%
+  
+  \bibitem{SYneww}
+  M.~Shifman and A.~Yung,
+  %``N=(0,2) Deformation of the N=(2,2) Wess-Zumino Model in Two Dimensions,''
+  Phys.\ Rev.\  D {\bf 81}, 105022 (2010)
+  [arXiv:0912.3836 [hep-th]].
+  %%CITATION = PHRVA,D81,105022;%%
+  
+  \bibitem{D1}
+  J.~Distler and S.~Kachru,
+  %``(0,2) Landau-Ginzburg theory,''
+  Nucl.\ Phys.\  B {\bf 413}, 213 (1994)
+  [arXiv:hep-th/9309110].
+  %%CITATION = NUPHA,B413,213;%%
+  
+  \bibitem{D2}
+  T.~Kawai and K.~Mohri,
+  %``Geometry Of (0,2) Landau-Ginzburg Orbifolds,''
+  Nucl.\ Phys.\  B {\bf 425}, 191 (1994)
+  [arXiv:hep-th/9402148].
+  %%CITATION = NUPHA,B425,191;%%
+  
+  \bibitem{D3}
+  I.~V.~Melnikov,
+  %``(0,2) Landau-Ginzburg Models and Residues,''
+  JHEP {\bf 0909}, 118 (2009)
+  [arXiv:0902.3908 [hep-th]].
+  %%CITATION = JHEPA,0909,118;%%
+  
+  \bibitem{Shifman:2009ay}
+  M.~Shifman and A.~Yung,
+  %``Crossover between Abelian and non-Abelian confinement in N=2 supersymmetric
+  %QCD,''
+  Phys.\ Rev.\  D {\bf 79}, 105006 (2009)
+  [arXiv:0901.4144 [hep-th]].
+  %%CITATION = PHRVA,D79,105006;%%
+
+  \bibitem{Tadpoint}
+  D.~Tong,
+  %``Superconformal  vortex strings,''
+  JHEP {\bf 0612}, 051 (2006)
+  [arXiv:hep-th/0610214].
+
+  \bibitem{SMMS}
+  A.~Migdal and M.~Shifman,
+  %``Dilaton Effective Lagrangian In Gluodynamics,''
+  Phys.\ Lett.\  B {\bf 114}, 445 (1982).
+  %%CITATION = PHLTA,B114,445;%%
+  
+  \bibitem{Kos}
+  A.~Kovner and M.~A.~Shifman,
+  %``Chirally symmetric phase of supersymmetric gluodynamics,''
+  Phys.\ Rev.\  D {\bf 56}, 2396 (1997)
+  [arXiv:hep-th/9702174].
+  %%CITATION = PHRVA,D56,2396;%%
+
+\end{thebibliography}
+
+
+\end{document}
