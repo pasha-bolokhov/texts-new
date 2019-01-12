@@ -276,8 +276,9 @@ AUXILIARIES = *.aux *.dvi *.log *.toc *.bbl *.blg texput.log *.bak *~
 # These variables determine the invocation form of the utilities that are being exploited
 # Feel free to change these if necessary
 #
-LATEX = latex
-PDFLATEX = pdflatex
+LATEX_OPTIONS =
+LATEX = latex $(LATEX_OPTIONS)
+PDFLATEX = pdflatex $(LATEX_OPTIONS)
 DVIPS = dvips
 PS2PDF = ps2pdf
 PDF2PS = pdf2ps
